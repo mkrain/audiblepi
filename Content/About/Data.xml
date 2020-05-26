@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<About>
+  <!-- The App element allows you to override the values that are extracted from the WMAppManifest.xml file automatically -->
+  <!-- The AdditionalNotes attribute has no equivalent in the WMAppManifest.xml; you can only define its content here -->
+  <!-- New in 1.1: Explicitly set any of the attributes to an empty string to remove it (including its label) from the dialog -->
+  <App Title="Audible.Pi"
+       Author="Jeremiah Medina"
+       Description="Hear the sounds of Pi with various instruments"
+       AdditionalNotes="Options for both calculating pi and playing it from the embedded file." />
+  <Items>
+    <!-- Create a MainItem entry to configure the front page -->
+    <!-- The Title attribute defines the title of the pivot item -->
+    <!-- The Label (and review button content) attributes can override the default values to what you like, and also help with localization -->
+    <MainItem Title="about"
+              AppAuthorLabel="by"
+              AppDescriptionLabel="Description:"
+              AppPublisherLabel="Publisher:"
+              AppVersionLabel="Version:"
+              AppAdditionalNotesLabel="Additional Notes:"
+              AppReviewButtonContent="Review this app!">
+      <Links>
+        <!-- A collection of links presented on the front page. -->
+        <!-- By using different protocols like http or mailto you can invoke the respective applications -->
+        <!-- The Label attribute defines an additional label placed in front of the hyperlink -->
+        <!-- Use this to provide contact/support details for your app -->
+        <Link NavigateUri="http://jeremiahmedina.blogspot.com/"
+              Label="My blog:"
+              Content="Tech Space" />
+        <Link NavigateUri="mailto:mkrain@hotmail.com?subject=audiblepi"
+              Label="Email:"
+              Content="mkrain@hotmail.com" />
+      </Links>
+    </MainItem>
+    <Item Title="history"
+          Type="text">
+      1.2.1.0
+      - Minor update to fix the app list control.
+      
+      1.2.0.0
+      - This adds the ability to play up to nearly 1,000,000 digits of pi from the embedded file.
+
+      1.1.0.0
+      - Bug fixes.
+      
+      1.0.0.0
+      - This is the initial public version.
+    </Item>
+    <Item Title="pi" Type="text">
+      About Pi
+      You can find information about Pi here: 
+      -http://en.wikipedia.org/wiki/Pi/
+      Information about the fomula used: 
+      -http://en.wikipedia.org/wiki/John_Machin/
+      
+      Playing 12 Standard Notes
+      In order to play the 12 standards notes
+      ( C, C#, D, D#, E, F, F#, G, G#, A, A#, B ), the 
+      decimal equivalent of Pi must be converted 
+      into duodecimal or base 12.  The application
+      takes a shortcut as converting such a precise 
+      number with imprecise datatypes is difficult.  
+      Instead the application takes each grouping of 5
+      digits as they are calculated and converts those 
+      to base 12.  What gets played are these 
+      "pseudo"-base 12 digits.
+      
+    </Item>
+    <Item Title="tips"
+          Type="text">
+      How it works
+      Playing the calculated pi value
+      - Simply click one of the three visible notes and the sound will play.
+      - If you want the notes to play continuously press the play button the notes will play until you reach the end, unless you have 'loop sound' selected.
+      - Press the previous arrow to return the the previous note, based on the skip amount.
+      - Similarly press the next arrow to advance the notes by the skip amount.
+      - You can play notes at the same time they are being auto played.
+      - Click on the instrument icon on the main menu to cycle through them.
+
+      Use The Settings Menu
+      The settings menu is your friend you can customize much of the app there
+      - Instrument: Let the fun began, violin is awesome but use the one you want.
+      - Prev/Next Skip: When using auto or manual advance this many digits will be skipped.
+      - Tempo : In milliseconds, time between each sound, try 125ms for furious mode!
+      - # Pi Digits: number of digits to calculate, more digits means more time.
+      - Loop Sound: When on, digits are continually played, looping at the end.
+      - Precomputed Digits: This will switch from calculated digits to precomputed digits.
+    </Item>
+  </Items>
+</About>

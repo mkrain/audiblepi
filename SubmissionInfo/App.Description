@@ -1,0 +1,20 @@
+Hear up to 1,000,000 (900K+ base 12), digits of pi (50,000 computed) with various instruments (guitar, piano and others), one at a time or continuously with various tempo rates.
+
+Playing 12 Standard Notes
+    In order to play the 12 standards notes ( C, C#, D, D#, E, F, F#, G, G#, A, A#, B ), the decimal equivalent of Pi must be converted into duodecimal or base 12.  The application
+    takes a shortcut as converting such a precise number with imprecise datatypes is difficult.  Instead the application takes each grouping of 5 digits as they are calculated and converts those 
+	to base 12.  What gets played are these "pseudo"-base 12 digits.
+	  
+How it works
+      Playing the calculated pi value
+      - Simply click one of the three visible notes and the sound will play.
+      - If you want the notes to play continuously press the play button the notes will play until you reach the end, unless you have 'loop sound' selected.
+      - Press the previous arrow to return the the previous note, based on the skip amount.
+      - Similarly press the next arrow to advance the notes by the skip amount.
+      - You can play notes at the same time they are being auto played.
+      - Click on the instrument icon on the main menu to cycle through them.
+
+1.2.1.0 - Minor update to fix the app list control.
+1.2.0.0 - Fix ad control, add ability to play 1,000,000 digits of pi.
+1.1.0.0 - Bug fixes.
+1.0.0.0 - Initial release.

@@ -1,0 +1,33 @@
+http://www.mtiks.com/newdashboard/wp7instructions
+
+
+Installation Instructions for Windows Phone 7 Apps
+
+These instructions are assuming that you are using Visual Studio (with Windows Phone 7 Tools & C# as the language) to build your project. Please follow the instructions below to integrate mtiks library into your existing development project.
+
+Create a new application in the portal and get a new code for the new app
+Download our library from the portal
+Requirements: .NET Framework 4, Windows Phone 7 Tools
+Add a reference to System.Reflection if you don't have it already
+Please make sure that you have these capabilities in your WP7AppManifest.xml or WMAppManifest.XML. Otherwise, you will get UnauthorizedAccessException. You can find this file under Properties folder of your App Solution.
+ <Capability Name="ID_CAP_IDENTITY_DEVICE"/>
+ <Capability Name="ID_CAP_IDENTITY_USER"/>
+				
+Reference app from your windows phone 7 project
+Declare the namespace as "using com.mtiks.winmobile;"
+At the beginning of Application_Launching and Application_Activated, add the following line: 
+ mtiks.Instance.Start("YOUR_APP_KEY", Assembly.GetExecutingAssembly());
+				
+
+YOUR_APP_KEY is the code generated from the Apps page after you create an app. If you copied it, paste it in place of YOUR_APP_KEY.
+Include the following statement at the beginning of "Application_Closing" and Application_Deactivated, add the following line 
+ mtiks.Instance.Stop();
+				
+If you would like to track custom events and attributes within your app (more info here): 
+ mtiks.Instance.postEventAttributes("Event Name", "Attribute List in Dictionary strings");
+				
+If you like to track your app exceptions from runtime, please use the following 
+ mtiks.Instance.AddException(
+		@"description"
+ );
+				

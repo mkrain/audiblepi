@@ -1,0 +1,33 @@
+﻿<phone:PhoneApplicationPage 
+    x:Class="BuiltToRoam.WindowsPhone.Controls.Test.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
+    xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    FontFamily="{StaticResource PhoneFontFamilyNormal}"
+    FontSize="{StaticResource PhoneFontSizeNormal}"
+    Foreground="{StaticResource PhoneForegroundBrush}"
+    SupportedOrientations="Portrait" Orientation="Portrait"
+    mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="768"
+    xmlns:ctrl="clr-namespace:BuiltToRoam.WindowsPhone.Controls;assembly=BuiltToRoam.WindowsPhone.Controls"
+    shell:SystemTray.IsVisible="True"
+    Loaded="PhoneApplicationPage_Loaded"
+    >
+    <phone:PhoneApplicationPage.Resources>
+        <DataTemplate x:Key="WheelItemTemplate">
+            <Border Height="150" >
+                <TextBlock TextWrapping="Wrap" Text="{Binding Text}" Foreground="White" VerticalAlignment="Bottom" 
+				HorizontalAlignment="Left" FontSize="64" Margin="6,0,0,6"/>
+            </Border>
+        </DataTemplate>
+    </phone:PhoneApplicationPage.Resources>
+    <Grid x:Name="LayoutRoot" Background="Transparent">
+            <ctrl:Wheel x:Name="Wheel1" DataContext="{Binding Source={StaticResource SampleDataSource}}" ItemsSource="{Binding Collection}" HorizontalAlignment="Left" Margin="61,36,0,35" Width="150" 
+                            ItemTemplate="{StaticResource WheelItemTemplate}"/>
+            <ctrl:Wheel  DataContext="{Binding Source={StaticResource SampleDataSource1}}" ItemsSource="{Binding Collection}" Margin="215,36,115,35" Width="Auto" d:LayoutOverrides="HorizontalMargin"
+                             ItemTemplate="{StaticResource WheelItemTemplate}"/>
+    </Grid>
+  
+</phone:PhoneApplicationPage>

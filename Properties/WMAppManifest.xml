@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Deployment xmlns="http://schemas.microsoft.com/windowsphone/2009/deployment" AppPlatformVersion="7.1">
+  <App xmlns="" ProductID="{7e489632-fe7c-45b9-89e0-dc49dd8ba4ba}" Title="AudiblePi" RuntimeType="Silverlight" Version="1.2.0.0" Genre="apps.normal" Author="AudiblePi author" Description="Hear up to 1,000,000 (900K+ base 12), digits of pi (50,000 computed) with various instruments (guitar, piano and others), one at a time or continuously with various tempo rates" Publisher="AudiblePi">
+    <IconPath IsRelative="true" IsResource="false">ApplicationIcon.png</IconPath>
+    <Capabilities>
+      <Capability Name="ID_CAP_IDENTITY_USER" />
+      <Capability Name="ID_CAP_IDENTITY_DEVICE" />
+      <Capability Name="ID_CAP_NETWORKING" />
+    </Capabilities>
+    <Tasks>
+      <DefaultTask Name="_default" NavigationPage="View/MainPageView.xaml" />
+    </Tasks>
+    <Tokens>
+      <PrimaryToken TokenID="AudiblePiToken" TaskName="_default">
+        <TemplateType5>
+          <BackgroundImageURI IsRelative="true" IsResource="false">Background.png</BackgroundImageURI>
+          <Count>0</Count>
+          <Title>AudiblePi</Title>
+        </TemplateType5>
+      </PrimaryToken>
+    </Tokens>
+  </App>
+</Deployment>

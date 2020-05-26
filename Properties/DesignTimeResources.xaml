@@ -1,0 +1,11 @@
+﻿<ResourceDictionary
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<ResourceDictionary.MergedDictionaries>
+		<ResourceDictionary Source="/AudiblePi;component/Resources/Converter.xaml"/>
+		<ResourceDictionary Source="/AudiblePi;component/Resources/ControlStyles.xaml"/>
+		<ResourceDictionary Source="/AudiblePi;component/Resources/ControlTemplates.xaml"/>
+		<ResourceDictionary Source="/AudiblePi;component/Resources/PageTransitions.xaml"/>
+	</ResourceDictionary.MergedDictionaries>
+	<!-- Resource dictionary entries should be defined here. -->
+</ResourceDictionary>

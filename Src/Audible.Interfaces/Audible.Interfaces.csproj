@@ -1,0 +1,136 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.20506</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{9355D7D6-6F29-4EE2-A511-6207BF4AF916}</ProjectGuid>
+    <ProjectTypeGuids>{C089C8C0-30E0-4E22-80C0-CE093F111A43};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Audible.Interfaces</RootNamespace>
+    <AssemblyName>Audible.Interfaces</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
+    <TargetFrameworkProfile>WindowsPhone71</TargetFrameworkProfile>
+    <TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>
+    <SilverlightApplication>false</SilverlightApplication>
+    <ValidateXaml>true</ValidateXaml>
+    <ThrowErrorsInValidation>true</ThrowErrorsInValidation>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\Lib\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;SILVERLIGHT;WINDOWS_PHONE</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\Lib\</OutputPath>
+    <DefineConstants>TRACE;SILVERLIGHT;WINDOWS_PHONE</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="GalaSoft.MvvmLight.Extras.WP71, Version=4.2.30.23589, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\MvvmLightLibs.4.2.30.0\lib\sl4-wp71\GalaSoft.MvvmLight.Extras.WP71.dll</HintPath>
+    </Reference>
+    <Reference Include="GalaSoft.MvvmLight.WP71, Version=4.2.30.23589, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\MvvmLightLibs.4.2.30.0\lib\sl4-wp71\GalaSoft.MvvmLight.WP71.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\packages\MvvmLightLibs.4.2.30.0\lib\sl4-wp71\Microsoft.Practices.ServiceLocation.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Xna.Framework" />
+    <Reference Include="System.Windows" />
+    <Reference Include="system" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Interactivity, Version=3.8.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MvvmLightLibs.4.2.30.0\lib\sl4-wp71\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Net" />
+    <Reference Include="mscorlib.extensions" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Action\SoundEffectAction.cs" />
+    <Compile Include="Attributes\Ad\LargeAdAttribute.cs" />
+    <Compile Include="Attributes\Ad\SmallAdAttribute.cs" />
+    <Compile Include="Attributes\Pi\ComputedAttribute.cs" />
+    <Compile Include="Attributes\Pi\StreamedAttribute.cs" />
+    <Compile Include="ConfigKey.cs" />
+    <Compile Include="EnumHelper.cs" />
+    <Compile Include="Extensions\IntegerExtensions.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Messages\PiCalculator\PiCalculatorChangedMessage.cs" />
+    <Compile Include="Messages\Settings\Base10ChangedMessage.cs" />
+    <Compile Include="Messages\Settings\IsPiComputedChangedMessage.cs" />
+    <Compile Include="Model\IPiModel.cs" />
+    <Compile Include="Provider\IAdProvider.cs" />
+    <Compile Include="Messages\MessageBase.cs" />
+    <Compile Include="Messages\PiCalculator\CalculatingArcTanMessage.cs" />
+    <Compile Include="Messages\PiCalculator\CalculatingMessage.cs" />
+    <Compile Include="Messages\PiCalculator\CanceledMessage.cs" />
+    <Compile Include="Messages\PiCalculator\StartingMessage.cs" />
+    <Compile Include="Messages\PiCalculator\StoppingMessage.cs" />
+    <Compile Include="Messages\Settings\IsSoundLoopedSettingMessage.cs" />
+    <Compile Include="Messages\Settings\NoteIntervalChangedMessage.cs" />
+    <Compile Include="Messages\Settings\NoteTypeChangedMessage.cs" />
+    <Compile Include="Messages\Settings\PiPrecisionDigitSettingMessage.cs" />
+    <Compile Include="Messages\Settings\PiSkipDigitSettingMessage%27.cs" />
+    <Compile Include="Messages\Settings\SettingsMessage.cs" />
+    <Compile Include="Model\INoteModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Provider\CalculatingArcTanEventArgs.cs" />
+    <Compile Include="Provider\CalculatingPiEventArgs.cs" />
+    <Compile Include="Provider\ComputedPi.cs" />
+    <Compile Include="Provider\IIconProvider.cs" />
+    <Compile Include="Provider\INoteProvider.cs" />
+    <Compile Include="Provider\IPiCalculator.cs" />
+    <Compile Include="Provider\IPiCalculatorFactory.cs" />
+    <Compile Include="Provider\IPiIterator.cs" />
+    <Compile Include="Provider\Note.cs" />
+    <Compile Include="Provider\NoteType.cs" />
+    <Compile Include="Provider\PiCalculatedEventArgs.cs" />
+    <Compile Include="StringKey.cs" />
+    <Compile Include="ViewModel\IAppListViewModel.cs" />
+    <Compile Include="ViewModel\IInfoViewModel.cs" />
+    <Compile Include="ViewModel\INoteViewModel.cs" />
+    <Compile Include="ViewModel\IPageViewModel.cs" />
+    <Compile Include="ViewModel\IPiViewModel.cs" />
+    <Compile Include="ViewModel\ISettingsViewmodel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.$(TargetFrameworkProfile).Overrides.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.CSharp.targets" />
+  <ProjectExtensions />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
