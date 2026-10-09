@@ -10,8 +10,14 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {
+  SafeAreaProvider,
+  SafeAreaView,
+} from 'react-native-safe-area-context';
+import BootSplash from 'react-native-bootsplash';
+import mobileAds from 'react-native-google-mobile-ads';
 
+import { AdBanner } from './src/ads/AdBanner';
 import { RootNavigator } from './src/navigation';
 import { initApp } from './src/playback';
 import { colors, fontSizes, spacing } from './src/ui/theme';
@@ -22,6 +28,11 @@ function App() {
 
   useEffect(() => {
     let cancelled = false;
+    // Initialize the Mobile Ads SDK (uses test ids until TODO(ADMOB) is done).
+    // NOTE: for EU users this should be gated behind UMP consent before release.
+    mobileAds()
+      .initialize()
+      .catch(() => undefined);
     initApp()
       .then(() => {
         if (!cancelled) {
@@ -38,6 +49,12 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (ready) {
+      BootSplash.hide({ fade: true });
+    }
+  }, [ready]);
+
   return (
     <SafeAreaProvider>
       {error ? (
@@ -46,9 +63,16 @@ function App() {
           <Text style={styles.errorBody}>{error}</Text>
         </View>
       ) : ready ? (
-        <NavigationContainer>
-          <RootNavigator />
-        </NavigationContainer>
+        <View style={styles.fill}>
+          <View style={styles.fill}>
+            <NavigationContainer>
+              <RootNavigator />
+            </NavigationContainer>
+          </View>
+          <SafeAreaView edges={['bottom']} style={styles.banner}>
+            <AdBanner />
+          </SafeAreaView>
+        </View>
       ) : (
         <View style={styles.center} testID="app-loading">
           <ActivityIndicator size="large" color={colors.accent} />
@@ -60,6 +84,13 @@ function App() {
 }
 
 const styles = StyleSheet.create({
+  fill: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  banner: {
+    backgroundColor: colors.background,
+  },
   center: {
     flex: 1,
     backgroundColor: colors.background,

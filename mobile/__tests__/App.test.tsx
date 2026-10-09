@@ -48,6 +48,13 @@ jest.mock('react-native-safe-area-context', () => {
   return {
     SafeAreaProvider: ({ children }: { children?: React.ReactNode }) =>
       ReactMock.createElement(RN.View, null, children),
+    SafeAreaView: ({
+      children,
+      testID,
+    }: {
+      children?: React.ReactNode;
+      testID?: string;
+    }) => ReactMock.createElement(RN.View, { testID }, children),
     SafeAreaInsetsContext: ReactMock.createContext(insets),
     SafeAreaFrameContext: ReactMock.createContext(frame),
     useSafeAreaInsets: () => insets,
@@ -67,6 +74,27 @@ jest.mock('@react-native-picker/picker', () => {
   }) => ReactMock.createElement(RN.View, { testID }, children);
   Picker.Item = () => null;
   return { Picker };
+});
+
+// Native splash module isn't present in Jest — stub the hide call.
+jest.mock('react-native-bootsplash', () => ({
+  __esModule: true,
+  default: { hide: jest.fn(() => Promise.resolve()) },
+}));
+
+// AdMob has no native module in Jest — stub init and the banner view.
+jest.mock('react-native-google-mobile-ads', () => {
+  const ReactMock = require('react') as typeof React;
+  const RN = require('react-native') as typeof import('react-native');
+  return {
+    __esModule: true,
+    default: jest.fn(() => ({
+      initialize: jest.fn(() => Promise.resolve()),
+    })),
+    BannerAd: () => ReactMock.createElement(RN.View, { testID: 'mock-banner-ad' }),
+    BannerAdSize: { ANCHORED_ADAPTIVE_BANNER: 'ANCHORED_ADAPTIVE_BANNER' },
+    TestIds: { BANNER: 'test-banner-id' },
+  };
 });
 
 import App from '../App';
@@ -94,4 +122,6 @@ test('shows loading indicator, then the tab navigator', async () => {
   expect(renderer.root.findByType(NavigationContainer)).toBeTruthy();
   // Player tab is the default route.
   expect(renderer.root.findByProps({ testID: 'counter' })).toBeTruthy();
+  // The AdMob banner sits below the tab navigator on every screen.
+  expect(renderer.root.findByProps({ testID: 'ad-banner' })).toBeTruthy();
 });
