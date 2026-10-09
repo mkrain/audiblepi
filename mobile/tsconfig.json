@@ -9,6 +9,9 @@
     "**/Pods"
   ],
   "compilerOptions": {
-    "strict": true
+    "strict": true,
+    // "node" is needed for Jest tests (fs/path/__dirname); app runtime code
+    // must not rely on node APIs (Metro/Hermes have none).
+    "types": ["jest", "node"]
   }
 }

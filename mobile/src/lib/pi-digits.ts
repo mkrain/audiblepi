@@ -123,20 +123,20 @@ export class PiDigitReader {
   }
 
   moveNext(): boolean {
-    this.index++;
-    if (this.index > this.digits.length - 1) {
-      this.index = this.digits.length - 1;
+    if (this.index >= this.digits.length - 1) {
       return false;
     }
+    // Refresh the previous/current/next window via seek — the WP7
+    // PiStreamIterator re-read its window on every move as well.
+    this.seek(this.index + 1);
     return true;
   }
 
   movePrevious(): boolean {
-    this.index--;
-    if (this.index < 0) {
-      this.index = 0;
+    if (this.index <= 0) {
       return false;
     }
+    this.seek(this.index - 1);
     return true;
   }
 

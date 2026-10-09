@@ -68,6 +68,21 @@ describe('PiDigitReader (port of PiStreamIterator)', () => {
     expect(reader.next).toBe('');
   });
 
+  test('moveNext/movePrevious refresh the prev/current/next window', () => {
+    const reader = new PiDigitReader('31415926');
+    expect(reader.current).toBe('3');
+
+    expect(reader.moveNext()).toBe(true);
+    expect(reader.previous).toBe('3');
+    expect(reader.current).toBe('1');
+    expect(reader.next).toBe('4');
+
+    expect(reader.movePrevious()).toBe(true);
+    expect(reader.previous).toBe('');
+    expect(reader.current).toBe('3');
+    expect(reader.next).toBe('1');
+  });
+
   test('moveNext/movePrevious clamp at the ends', () => {
     const reader = new PiDigitReader('314');
     expect(reader.movePrevious()).toBe(false);
