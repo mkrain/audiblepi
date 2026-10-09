@@ -37,6 +37,8 @@ const defaultKeepAwake: KeepAwakeControl = {
 export interface PlaybackEvents {
   /** Fired when the cursor runs past the last digit. */
   onEnded?: () => void;
+  /** Fired after each successful timed advance (Phase 3 uses it to sync UI). */
+  onAdvanced?: () => void;
 }
 
 export class PlaybackController {
@@ -143,6 +145,7 @@ export class PlaybackController {
     }
     if (source.moveNext()) {
       this.playCurrent();
+      this.events.onAdvanced?.();
     } else {
       const onEnded = this.events.onEnded;
       this.stop().then(() => onEnded?.()).catch(() => undefined);

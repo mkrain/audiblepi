@@ -17,7 +17,6 @@ export interface BigNumberEvents {
 }
 
 const LIMB_BASE = 0x100000000; // 2^32
-const LIMB_BASE_BIGINT = 0x100000000n;
 const LIMB_MASK_BIGINT = 0xffffffffn;
 
 /** Yield to the event loop so progress UI stays alive during long calculations. */

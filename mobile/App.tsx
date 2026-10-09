@@ -1,44 +1,86 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
+ * AudiblePi — hear the digits of pi.
+ *
+ * Bootstraps persisted settings, the precomputed digit file and the audio
+ * engine before showing the tab UI.
  *
  * @format
  */
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { RootNavigator } from './src/navigation';
+import { initApp } from './src/playback';
+import { colors, fontSizes, spacing } from './src/ui/theme';
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    initApp()
+      .then(() => {
+        if (!cancelled) {
+          setReady(true);
+        }
+      })
+      .catch((e: unknown) => {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : String(e));
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
+      {error ? (
+        <View style={styles.center}>
+          <Text style={styles.errorTitle}>Couldn&apos;t start AudiblePi</Text>
+          <Text style={styles.errorBody}>{error}</Text>
+        </View>
+      ) : ready ? (
+        <NavigationContainer>
+          <RootNavigator />
+        </NavigationContainer>
+      ) : (
+        <View style={styles.center} testID="app-loading">
+          <ActivityIndicator size="large" color={colors.accent} />
+          <Text style={styles.loadingText}>Loading pi…</Text>
+        </View>
+      )}
     </SafeAreaProvider>
   );
 }
 
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  container: {
+  center: {
     flex: 1,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.lg,
+  },
+  loadingText: {
+    color: colors.muted,
+    fontSize: fontSizes.body,
+    marginTop: spacing.md,
+  },
+  errorTitle: {
+    color: colors.danger,
+    fontSize: fontSizes.title,
+    marginBottom: spacing.sm,
+  },
+  errorBody: {
+    color: colors.text,
+    fontSize: fontSizes.body,
+    textAlign: 'center',
   },
 });
 
