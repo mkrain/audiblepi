@@ -1,97 +1,108 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# AudiblePi (React Native)
 
-# Getting Started
+**Hear the digits of π.** Each base-12 digit of pi plays a musical note —
+chromatic scale, 5 instruments (Glockenspiel, Guitar, Piano, Sax, Violin) —
+on a configurable tempo. This is a bare React Native + TypeScript port of the
+original Windows Phone 7 Silverlight app (whose source is preserved at the
+repo root for reference); the mobile app lives in `mobile/`.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Prerequisites
 
-## Step 1: Start Metro
+- **Node.js 22 LTS or newer** (the repo's `engines` field requires ≥ 22.11) and
+  **npm** (ships with Node). Check with `node --version` / `npm --version`.
+- **iOS:** Xcode (Mac only) + CocoaPods (`sudo gem install cocoapods`).
+  Also run `bundle install` once inside `mobile/ios` if the Podfile setup
+  complains about the Ruby bundler.
+- **Android:** JDK 17 + Android Studio (SDK + an emulator, or a connected
+  device with USB debugging).
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+Follow the [React Native environment setup guide](https://reactnative.dev/docs/set-up-your-environment)
+first if any of the above is missing.
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+## Setup (do this after every fresh clone)
+
+The `react-native` CLI lives in `node_modules` — **nothing works until
+dependencies are installed**:
 
 ```sh
-# Using npm
+cd mobile
+npm install
+```
+
+## Run
+
+Terminal 1 — start Metro (the JS bundler):
+
+```sh
+cd mobile
 npm start
-
-# OR using Yarn
-yarn start
 ```
 
-## Step 2: Build and run your app
+Terminal 2 — build & run the app (with Metro running):
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
+**Android** (emulator open, or device connected):
 
 ```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+cd mobile
+npx react-native run-android
 ```
 
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+**iOS** (Mac only — install pods first, then run):
 
 ```sh
-bundle install
+cd mobile
+cd ios && pod install && cd ..
+npx react-native run-ios
 ```
 
-Then, and every time you update your native dependencies, run:
+You can also open `mobile/ios/AudiblePi.xcworkspace` in Xcode or the
+`mobile/android` folder in Android Studio and build from there.
+
+## Troubleshooting
+
+**`sh: react-native: command not found` when running `npm start`**
+→ You skipped Setup. Run `npm install` inside `mobile/` (this installs the
+React Native CLI locally) and try again. This bites after every fresh clone.
+
+**iOS build fails on first try**
+→ The Expo native integration (expo-av, expo-file-system, …) was
+hand-applied to the native projects because `install-expo-modules` doesn't
+support this React Native version yet. The first `pod install` / Xcode build
+on a Mac is what verifies it — if it fails, paste the error and we'll fix the
+native wiring.
+
+**Metro can't resolve a new native dependency**
+→ Re-run `pod install` (iOS) or rebuild (Android) after `npm install`.
+
+**Port 8081 in use**
+→ `npx react-native start --port 8088` (and shake the device → Dev Settings →
+set the debug server host/port to match).
+
+## Project layout
+
+```
+mobile/
+  App.tsx                 # bootstrap: settings hydrate → digit file → audio engine → tabs
+  src/
+    playback.ts           # transport orchestration (the screens call this)
+    navigation.tsx        # bottom tabs: Player / Settings / About
+    screens/              # PlayerScreen, SettingsScreen, AboutScreen
+    audio/                # SoundBank (expo-av), TempoScheduler, PlaybackController
+    lib/                  # pi engine: BigNumber, Machin PiCalculator, digit→note map
+    state/                # zustand stores: player, settings (MMKV), calculation
+    ui/                   # theme, instrument icons
+  assets/                 # 60 WAVs, pi-digit files, icons (from the WP7 project)
+```
+
+Product decisions baked in: **base-12 only** (no base-10 toggle), **no
+cross-promo "other apps" section**, **precomputed digits by default** (the
+Machin calculator remains as the secondary option in Settings).
+
+## Tests
 
 ```sh
-bundle exec pod install
+cd mobile
+npx jest          # 95 tests: parity vs the C# originals, audio, state, screens
+npx tsc --noEmit  # strict TypeScript
+npx eslint src __tests__ App.tsx
 ```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
-```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
