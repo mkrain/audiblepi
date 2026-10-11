@@ -12,7 +12,7 @@ if you want something else:
 
 ## 0. Verify the native build (do this first, once)
 
-The Expo native integration (`expo-av`, `expo-file-system`, etc.) and the
+The Expo native integration (`expo-audio`, `expo-file-system`, etc.) and the
 `@react-native-picker/picker` native module were wired by hand — the automated
 installer doesn't support this RN version. Before anything else:
 

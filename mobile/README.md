@@ -65,7 +65,7 @@ You can also open `mobile/ios/AudiblePi.xcworkspace` in Xcode or the
 React Native CLI locally) and try again. This bites after every fresh clone.
 
 **iOS build fails on first try**
-→ The Expo native integration (expo-av, expo-file-system, …) was
+→ The Expo native integration (expo-audio, expo-file-system, …) was
 hand-applied to the native projects because `install-expo-modules` doesn't
 support this React Native version yet. The first `pod install` / Xcode build
 on a Mac is what verifies it — if it fails, paste the error and we'll fix the
@@ -87,7 +87,7 @@ mobile/
     playback.ts           # transport orchestration (the screens call this)
     navigation.tsx        # bottom tabs: Player / Settings / About
     screens/              # PlayerScreen, SettingsScreen, AboutScreen
-    audio/                # SoundBank (expo-av), TempoScheduler, PlaybackController
+    audio/                # SoundBank (expo-audio), TempoScheduler, PlaybackController
     lib/                  # pi engine: BigNumber, Machin PiCalculator, digit→note map
     state/                # zustand stores: player, settings (MMKV), calculation
     ui/                   # theme, instrument icons
