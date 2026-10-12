@@ -1,6 +1,7 @@
 /**
- * Transient state for the "Calculating Pi…" overlay (the WP7 popup).
- * Progress is the 0-based digit-group index reported by PiCalculator.
+ * Transient state for background pi calculation.
+ * Progress is the current term/divisor during arctan, or digit index during
+ * extraction. Target is the requested digit count.
  */
 
 import { create } from 'zustand';
@@ -8,7 +9,8 @@ import { create } from 'zustand';
 export interface CalculationState {
   isCalculating: boolean;
   progressDigit: number;
-  start(): void;
+  targetDigits: number;
+  start(target: number): void;
   setProgress(digitIndex: number): void;
   finish(): void;
 }
@@ -16,7 +18,8 @@ export interface CalculationState {
 export const useCalculationStore = create<CalculationState>()((set) => ({
   isCalculating: false,
   progressDigit: 0,
-  start: () => set({ isCalculating: true, progressDigit: 0 }),
+  targetDigits: 0,
+  start: (target) => set({ isCalculating: true, progressDigit: 0, targetDigits: target }),
   setProgress: (progressDigit) => set({ progressDigit }),
-  finish: () => set({ isCalculating: false, progressDigit: 0 }),
+  finish: () => set({ isCalculating: false, progressDigit: 0, targetDigits: 0 }),
 }));

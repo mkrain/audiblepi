@@ -70,4 +70,12 @@ export class PiService {
   cancel(): void {
     this.calculator.cancel();
   }
+
+  /**
+   * Extracts partial digits from an interrupted computation.
+   * Returns null if nothing was computed.
+   */
+  extractPartialDigits(option: PiConversionOption): PiDigitSequence | null {
+    return this.calculator.extractPartialDigits(option);
+  }
 }

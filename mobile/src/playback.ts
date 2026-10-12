@@ -305,15 +305,18 @@ export function switchToPrecomputed(): void {
 }
 
 /**
- * Run the Machin calculator (the WP7 "Calculating Pi…" flow).
- * Resolves true when the calculated sequence became the active source,
- * false when the user cancelled (precomputed source is kept).
+ * Start the Machin calculator in the background. Returns immediately —
+ * the computation runs async and the cursor source is swapped when it
+ * completes. Progress is reported via the callbacks for the Player screen
+ * to display. Call cancelBackgroundCalculation() to stop early and lock in
+ * partial digits.
  */
-export async function startCalculation(
+export function startBackgroundCalculation(
   rounds: number,
   onProgress: (digitIndex: number) => void,
   onArcTanProgress?: (divisor: number) => void,
-): Promise<boolean> {
+  onComplete?: (completed: boolean) => void,
+): void {
   const s = requireServices();
   calcCancelled = false;
   const wasPlaying = usePlayerStore.getState().isPlaying;
@@ -322,27 +325,67 @@ export async function startCalculation(
     usePlayerStore.getState().setPlaying(false);
   }
   s.piService.setUsePrecomputed(false);
-  // Yield so the calculation dialog renders before the heavy arctan work
-  // starts — otherwise the JS thread blocks and the UI appears hung.
-  await yieldToEventLoop();
-  const sequence = await s.piService.calculate('base12', rounds, {
-    onDigitCalculated: onProgress,
-    onArcTanDivisorCalculated: onArcTanProgress
-      ? ({ divisor }) => onArcTanProgress(divisor)
-      : undefined,
-  });
-  if (calcCancelled) {
-    switchToPrecomputed();
-    return false;
+  // Run async — don't block the caller. The calculation yields periodically
+  // so the UI stays responsive.
+  (async () => {
+    await yieldToEventLoop();
+    const sequence = await s.piService.calculate('base12', rounds, {
+      onDigitCalculated: onProgress,
+      onArcTanDivisorCalculated: onArcTanProgress
+        ? ({ divisor }) => onArcTanProgress(divisor)
+        : undefined,
+    });
+    if (calcCancelled) {
+      // Partial digits were locked in by cancelBackgroundCalculation.
+      onComplete?.(false);
+      return;
+    }
+    s.cursor.swapSource(sequence, sequence.length - 1);
+    usePlayerStore.getState().reset();
+    onComplete?.(true);
+  })().catch(() => undefined);
+}
+
+/**
+ * Stop the background computation and lock in whatever digits were computed
+ * so far. The cursor source is swapped to the partial sequence.
+ */
+export function cancelBackgroundCalculation(): void {
+  calcCancelled = true;
+  const s = services;
+  if (!s) {
+    return;
   }
-  s.cursor.swapSource(sequence, sequence.length - 1);
-  usePlayerStore.getState().reset();
-  return true;
+  s.piService.cancel();
+  // Extract partial digits from the interrupted computation.
+  const partial = s.piService.extractPartialDigits('base12');
+  if (partial && partial.length > 10) {
+    s.cursor.swapSource(partial, partial.length - 1);
+    usePlayerStore.getState().reset();
+  }
+}
+
+/**
+ * Legacy: Run the Machin calculator (the WP7 "Calculating Pi…" flow).
+ * Resolves true when the calculated sequence became the active source,
+ * false when the user cancelled (precomputed source is kept).
+ * @deprecated Use startBackgroundCalculation for the new UX.
+ */
+export async function startCalculation(
+  rounds: number,
+  onProgress: (digitIndex: number) => void,
+  onArcTanProgress?: (divisor: number) => void,
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    startBackgroundCalculation(rounds, onProgress, onArcTanProgress, (completed) => {
+      if (!completed) {
+        switchToPrecomputed();
+      }
+      resolve(completed);
+    });
+  });
 }
 
 export function cancelCalculation(): void {
-  calcCancelled = true;
-  if (services) {
-    services.piService.cancel();
-  }
+  cancelBackgroundCalculation();
 }

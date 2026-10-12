@@ -99,4 +99,24 @@ export class PiCalculator {
     this.calculating = false;
     this.left?.cancel();
   }
+
+  /**
+   * Extracts whatever digits are available from the current (possibly partial)
+   * BigNumber state. Used when the user cancels mid-computation — locks in
+   * the digits computed so far.
+   */
+  extractPartialDigits(option: PiConversionOption): PiDigitSequence | null {
+    if (!this.left) {
+      return null;
+    }
+    try {
+      const digits =
+        option === 'decimal' ? this.left.getPiDigits() : this.left.getPiDigitsBase12();
+      // Trim to a reasonable length — digits beyond the actual precision
+      // are garbage. Estimate: each arctan term adds ~1.4 decimal digits.
+      return new PiDigitSequence(digits);
+    } catch {
+      return null;
+    }
+  }
 }

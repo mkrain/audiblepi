@@ -18,6 +18,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 import {
+  cancelBackgroundCalculation,
   cycleInstrument,
   getDigitTotal,
   getVisibleNotes,
@@ -28,6 +29,7 @@ import {
 } from '../playback';
 import { usePlayerStore } from '../state/player';
 import { useSettingsStore } from '../state/settings';
+import { useCalculationStore } from '../state/calculation';
 import { iconForInstrument } from '../ui/instrument-icons';
 import { colors, fontSizes, spacing } from '../ui/theme';
 
@@ -57,6 +59,9 @@ export function PlayerScreen() {
   const digitIndex = usePlayerStore((s) => s.digitIndex);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const instrumentId = useSettingsStore((s) => s.instrumentId);
+  const isCalculating = useCalculationStore((s) => s.isCalculating);
+  const progressDigit = useCalculationStore((s) => s.progressDigit);
+  const targetDigits = useCalculationStore((s) => s.targetDigits);
 
   const notes = getVisibleNotes();
   const total = getDigitTotal();
@@ -65,11 +70,36 @@ export function PlayerScreen() {
     togglePlay().catch(() => undefined);
   }, []);
 
+  const onCancelCalculation = useCallback(() => {
+    cancelBackgroundCalculation();
+    // Keep isCalculating true so the progress stays visible — the partial
+    // digits are now the active source. User toggles precomputed in Settings
+    // to revert.
+  }, []);
+
   return (
     <View style={styles.container}>
-      <Text testID="counter" style={styles.counter}>
-        digit {digitIndex + 1} of {total}
-      </Text>
+      {isCalculating ? (
+        <View style={styles.calcBanner}>
+          <Text testID="calc-progress" style={styles.calcProgress}>
+            {progressDigit < 0
+              ? `Computing… term ${(-progressDigit).toLocaleString()} of ${targetDigits.toLocaleString()}`
+              : `Digit ${progressDigit.toLocaleString()} of ${targetDigits.toLocaleString()}`}
+          </Text>
+          <TouchableOpacity
+            testID="calc-cancel"
+            style={styles.calcCancel}
+            onPress={onCancelCalculation}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="stop-circle" size={28} color={colors.danger} />
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <Text testID="counter" style={styles.counter}>
+          digit {digitIndex + 1} of {total}
+        </Text>
+      )}
 
       <View style={styles.topRow}>
         <View testID="base-indicator" style={styles.baseBadge}>
@@ -158,6 +188,25 @@ const styles = StyleSheet.create({
     color: colors.accent,
     fontSize: fontSizes.title,
     marginBottom: spacing.md,
+  },
+  calcBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+  },
+  calcProgress: {
+    flex: 1,
+    color: colors.accent,
+    fontSize: fontSizes.body,
+  },
+  calcCancel: {
+    padding: spacing.xs,
   },
   topRow: {
     flexDirection: 'row',

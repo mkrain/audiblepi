@@ -47,6 +47,12 @@ jest.mock('@react-native-picker/picker', () => {
   return { Picker };
 });
 
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: () => ({
+    navigate: jest.fn(),
+  }),
+}));
+
 jest.mock('../../playback', () => ({
   getVisibleNotes: jest.fn(),
   getDigitTotal: jest.fn(),
@@ -58,6 +64,8 @@ jest.mock('../../playback', () => ({
   setInstrumentId: jest.fn(),
   startCalculation: jest.fn(),
   cancelCalculation: jest.fn(),
+  startBackgroundCalculation: jest.fn(),
+  cancelBackgroundCalculation: jest.fn(),
   switchToPrecomputed: jest.fn(),
 }));
 
@@ -65,10 +73,12 @@ import { AboutScreen } from '../AboutScreen';
 import { PlayerScreen } from '../PlayerScreen';
 import { SettingsScreen } from '../SettingsScreen';
 import {
+  cancelBackgroundCalculation,
   cancelCalculation,
   cycleInstrument,
   getDigitTotal,
   getVisibleNotes,
+  startBackgroundCalculation,
   startCalculation,
   stepNext,
   stepPrevious,
@@ -88,6 +98,8 @@ const mockTapNote = tapNote as jest.Mock;
 const mockCycleInstrument = cycleInstrument as jest.Mock;
 const mockStartCalculation = startCalculation as jest.Mock;
 const mockCancelCalculation = cancelCalculation as jest.Mock;
+const mockStartBackgroundCalculation = startBackgroundCalculation as jest.Mock;
+const mockCancelBackgroundCalculation = cancelBackgroundCalculation as jest.Mock;
 
 describe('PlayerScreen', () => {
   beforeEach(() => {
@@ -168,32 +180,57 @@ describe('SettingsScreen', () => {
     expect(useSettingsStore.getState().loopSound).toBe(true);
   });
 
-  test('turning off precomputed starts the calculation flow', () => {
-    mockStartCalculation.mockResolvedValue(true);
+  test('turning off precomputed starts background calculation', () => {
     const root = render(<SettingsScreen />).root;
     root.findByProps({ testID: 'switch-precomputed' }).props.onValueChange(false);
     expect(useSettingsStore.getState().usePrecomputed).toBe(false);
     expect(useCalculationStore.getState().isCalculating).toBe(true);
-    expect(mockStartCalculation).toHaveBeenCalledTimes(1);
+    expect(mockStartBackgroundCalculation).toHaveBeenCalledTimes(1);
   });
 
-  test('calculation overlay shows progress and cancel calls through', () => {
-    useCalculationStore.setState({ isCalculating: true, progressDigit: 1234 });
+  test('turning on precomputed finishes calculation state', () => {
+    useCalculationStore.setState({ isCalculating: true, progressDigit: 100, targetDigits: 1000 });
     const root = render(<SettingsScreen />).root;
-    expect(root.findByProps({ testID: 'calc-overlay' })).toBeTruthy();
+    root.findByProps({ testID: 'switch-precomputed' }).props.onValueChange(true);
+    expect(useCalculationStore.getState().isCalculating).toBe(false);
+  });
+});
+
+describe('PlayerScreen calculation banner', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    useCalculationStore.setState({ isCalculating: false, progressDigit: 0, targetDigits: 0 });
+    mockGetVisibleNotes.mockReturnValue({ previous: 'C', current: 'D', next: 'E' });
+    mockGetDigitTotal.mockReturnValue(100);
+  });
+
+  test('shows computing progress during arctan phase', () => {
+    useCalculationStore.setState({ isCalculating: true, progressDigit: -513, targetDigits: 1000 });
+    const root = render(<PlayerScreen />).root;
     expect(
       root.findByProps({ testID: 'calc-progress' }).props.children,
-    ).toEqual('Digit 1,234');
+    ).toEqual('Computing… term 513 of 1,000');
+  });
+
+  test('shows digit progress during extraction phase', () => {
+    useCalculationStore.setState({ isCalculating: true, progressDigit: 250, targetDigits: 1000 });
+    const root = render(<PlayerScreen />).root;
+    expect(
+      root.findByProps({ testID: 'calc-progress' }).props.children,
+    ).toEqual('Digit 250 of 1,000');
+  });
+
+  test('cancel button calls cancelBackgroundCalculation', () => {
+    useCalculationStore.setState({ isCalculating: true, progressDigit: -100, targetDigits: 1000 });
+    const root = render(<PlayerScreen />).root;
     root.findByProps({ testID: 'calc-cancel' }).props.onPress();
-    expect(mockCancelCalculation).toHaveBeenCalledTimes(1);
+    expect(mockCancelBackgroundCalculation).toHaveBeenCalledTimes(1);
   });
 
-  test('calculation overlay shows computing term during arctan phase', () => {
-    useCalculationStore.setState({ isCalculating: true, progressDigit: -567 });
-    const root = render(<SettingsScreen />).root;
-    expect(
-      root.findByProps({ testID: 'calc-progress' }).props.children,
-    ).toEqual('Computing… (term 567)');
+  test('shows normal counter when not calculating', () => {
+    useCalculationStore.setState({ isCalculating: false });
+    const root = render(<PlayerScreen />).root;
+    expect(root.findByProps({ testID: 'counter' })).toBeTruthy();
   });
 });
 

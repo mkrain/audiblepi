@@ -3,30 +3,29 @@
  * (SettingsViewmodel).
  *
  * Instrument / skip / tempo / digit-count pickers, loop-sound and
- * precomputed switches, and the full-screen "Calculating Pi…" overlay
- * with live progress and cancel, wired to pi-calculator's callbacks.
+ * precomputed switches. Toggling off precomputed starts a background pi
+ * calculation and navigates to the Player screen to show progress.
  */
 
 import { useCallback } from 'react';
 import {
-  Modal,
   ScrollView,
   StyleSheet,
   Switch,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 import {
-  cancelCalculation,
-  startCalculation,
+  startBackgroundCalculation,
   switchToPrecomputed,
 } from '../playback';
 import { INSTRUMENTS } from '../lib/notes';
 import { useCalculationStore } from '../state/calculation';
+import type { RootTabParamList } from '../navigation';
 import {
   COMPUTED_DIGIT_OPTIONS,
   SKIP_OPTIONS,
@@ -70,6 +69,7 @@ function ThemedPicker({
 }
 
 export function SettingsScreen() {
+  const navigation = useNavigation<BottomTabNavigationProp<RootTabParamList>>();
   const instrumentId = useSettingsStore((s) => s.instrumentId);
   const skipStep = useSettingsStore((s) => s.skipStep);
   const tempoMs = useSettingsStore((s) => s.tempoMs);
@@ -83,8 +83,6 @@ export function SettingsScreen() {
   const setLoopSound = useSettingsStore((s) => s.setLoopSound);
   const setUsePrecomputed = useSettingsStore((s) => s.setUsePrecomputed);
 
-  const isCalculating = useCalculationStore((s) => s.isCalculating);
-  const progressDigit = useCalculationStore((s) => s.progressDigit);
   const calcStart = useCalculationStore((s) => s.start);
   const calcSetProgress = useCalculationStore((s) => s.setProgress);
   const calcFinish = useCalculationStore((s) => s.finish);
@@ -93,24 +91,28 @@ export function SettingsScreen() {
     (value: boolean) => {
       if (value) {
         switchToPrecomputed();
+        calcFinish();
         return;
       }
-      // Switch to the Machin calculator: show the overlay, run with live
-      // progress, and keep the precomputed source if the user cancels.
+      // Switch to the Machin calculator: run in background with live progress
+      // on the Player screen. Navigate there immediately.
       setUsePrecomputed(false);
-      calcStart();
-      startCalculation(
+      calcStart(digitCount);
+      startBackgroundCalculation(
         digitCount,
         (digitIndex) => calcSetProgress(digitIndex),
-        // During the arctan series (the bulk of the computation), report the
-        // term divisor as a negative number so the dialog shows "Computing…"
-        // instead of being stuck at "Digit 0".
         (divisor) => calcSetProgress(-divisor),
-      ).then(() => {
-        calcFinish();
-      });
+        (completed) => {
+          if (completed) {
+            calcFinish();
+          }
+          // If cancelled, isCalculating stays true until user toggles
+          // precomputed back on — the partial digits remain active.
+        },
+      );
+      navigation.navigate('Player');
     },
-    [calcFinish, calcSetProgress, calcStart, digitCount, setUsePrecomputed],
+    [calcFinish, calcSetProgress, calcStart, digitCount, setUsePrecomputed, navigation],
   );
 
   return (
@@ -206,35 +208,6 @@ export function SettingsScreen() {
           />
         </SettingRow>
       </ScrollView>
-
-      <Modal
-        visible={isCalculating}
-        animationType="fade"
-        testID="calc-overlay"
-        onRequestClose={() => cancelCalculation()}
-      >
-        <View style={styles.overlay}>
-          <Text style={styles.overlayTitle}>
-            Calculating Pi. This might take some time. This popup will close
-            when it&apos;s finished. You can continue to play notes using the
-            current value. Tap the button below to cancel.
-          </Text>
-          <Text testID="calc-progress" style={styles.overlayProgress}>
-            {progressDigit < 0
-              ? `Computing… (term ${(-progressDigit).toLocaleString()})`
-              : `Digit ${progressDigit.toLocaleString()}`}
-          </Text>
-          <TouchableOpacity
-            testID="calc-cancel"
-            style={styles.cancelButton}
-            onPress={() => cancelCalculation()}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="close-circle" size={64} color={colors.danger} />
-            <Text style={styles.cancelLabel}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      </Modal>
     </View>
   );
 }
