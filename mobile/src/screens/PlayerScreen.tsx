@@ -46,7 +46,7 @@ function NoteButton({
     <TouchableOpacity
       testID={testID}
       style={[styles.noteButton, !label && styles.noteButtonDisabled]}
-      onPress={onPress}
+      onPressIn={onPress}
       disabled={!label}
       activeOpacity={0.6}
     >
