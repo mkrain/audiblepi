@@ -20,6 +20,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 import {
+  cancelBackgroundCalculation,
   startBackgroundCalculation,
   switchToPrecomputed,
 } from '../playback';
@@ -96,6 +97,8 @@ export function SettingsScreen() {
       }
       // Switch to the Machin calculator: run in background with live progress
       // on the Player screen. Navigate there immediately.
+      // Cancel any existing calculation first (defensive).
+      cancelBackgroundCalculation();
       // Reset digitCount to a supported computed value (it was 1M for precomputed).
       const computedDigits = 1000;
       setDigitCount(computedDigits);

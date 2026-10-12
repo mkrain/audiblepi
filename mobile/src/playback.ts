@@ -166,6 +166,17 @@ export async function initApp(): Promise<void> {
   const settings = useSettingsStore.getState();
   settings.hydrate();
 
+  // Calculated digits don't survive app restart — the computation is
+  // session-only. Reset to precomputed so the toggle matches reality.
+  if (!settings.usePrecomputed) {
+    settings.setUsePrecomputed(true);
+  }
+  // The digit count may be a stale computed value (1K/10K/50K); restore the
+  // precomputed default.
+  if (settings.digitCount !== DEFAULT_SETTINGS.digitCount) {
+    settings.setDigitCount(DEFAULT_SETTINGS.digitCount);
+  }
+
   const digits = await readDigitFile(true);
   const piService = new PiService(digits);
   const soundBank = new SoundBank();
