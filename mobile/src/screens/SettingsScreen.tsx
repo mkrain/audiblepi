@@ -235,6 +235,11 @@ const styles = StyleSheet.create({
   rowControl: {
     minHeight: 48,
     justifyContent: 'center',
+    // Constrain width so there's gutter space on the sides for scrolling
+    // without accidentally triggering the picker.
+    maxWidth: 320,
+    alignSelf: 'center',
+    width: '100%',
   },
   picker: {
     color: colors.text,

@@ -79,27 +79,9 @@ export function PlayerScreen() {
 
   return (
     <View style={styles.container}>
-      {isCalculating ? (
-        <View style={styles.calcBanner}>
-          <Text testID="calc-progress" style={styles.calcProgress}>
-            {progressDigit < 0
-              ? `Computing… term ${(-progressDigit).toLocaleString()} of ${targetDigits.toLocaleString()}`
-              : `Digit ${progressDigit.toLocaleString()} of ${targetDigits.toLocaleString()}`}
-          </Text>
-          <TouchableOpacity
-            testID="calc-cancel"
-            style={styles.calcCancel}
-            onPress={onCancelCalculation}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="stop-circle" size={28} color={colors.danger} />
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <Text testID="counter" style={styles.counter}>
-          digit {digitIndex + 1} of {total}
-        </Text>
-      )}
+      <Text testID="counter" style={styles.counter}>
+        digit {digitIndex + 1} of {total}
+      </Text>
 
       <View style={styles.topRow}>
         <View testID="base-indicator" style={styles.baseBadge}>
@@ -140,6 +122,24 @@ export function PlayerScreen() {
           onPress={() => tapNote('next')}
         />
       </View>
+
+      {isCalculating && (
+        <View style={styles.calcBanner}>
+          <Text testID="calc-progress" style={styles.calcProgress}>
+            {progressDigit < 0
+              ? `Computing… term ${(-progressDigit).toLocaleString()} of ${targetDigits.toLocaleString()}`
+              : `Digit ${progressDigit.toLocaleString()} of ${targetDigits.toLocaleString()}`}
+          </Text>
+          <TouchableOpacity
+            testID="calc-cancel"
+            style={styles.calcCancel}
+            onPress={onCancelCalculation}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="stop-circle" size={28} color={colors.danger} />
+          </TouchableOpacity>
+        </View>
+      )}
 
       <View style={styles.transportRow}>
         <TouchableOpacity
