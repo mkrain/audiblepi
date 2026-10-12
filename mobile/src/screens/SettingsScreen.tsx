@@ -99,8 +99,13 @@ export function SettingsScreen() {
       // progress, and keep the precomputed source if the user cancels.
       setUsePrecomputed(false);
       calcStart();
-      startCalculation(digitCount, (digitIndex) =>
-        calcSetProgress(digitIndex),
+      startCalculation(
+        digitCount,
+        (digitIndex) => calcSetProgress(digitIndex),
+        // During the arctan series (the bulk of the computation), report the
+        // term divisor as a negative number so the dialog shows "Computing…"
+        // instead of being stuck at "Digit 0".
+        (divisor) => calcSetProgress(-divisor),
       ).then(() => {
         calcFinish();
       });
@@ -215,7 +220,9 @@ export function SettingsScreen() {
             current value. Tap the button below to cancel.
           </Text>
           <Text testID="calc-progress" style={styles.overlayProgress}>
-            Digit {progressDigit.toLocaleString()}
+            {progressDigit < 0
+              ? `Computing… (term ${(-progressDigit).toLocaleString()})`
+              : `Digit ${progressDigit.toLocaleString()}`}
           </Text>
           <TouchableOpacity
             testID="calc-cancel"

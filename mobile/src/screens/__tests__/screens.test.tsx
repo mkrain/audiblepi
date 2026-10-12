@@ -183,9 +183,17 @@ describe('SettingsScreen', () => {
     expect(root.findByProps({ testID: 'calc-overlay' })).toBeTruthy();
     expect(
       root.findByProps({ testID: 'calc-progress' }).props.children,
-    ).toEqual(['Digit ', '1,234']);
+    ).toEqual('Digit 1,234');
     root.findByProps({ testID: 'calc-cancel' }).props.onPress();
     expect(mockCancelCalculation).toHaveBeenCalledTimes(1);
+  });
+
+  test('calculation overlay shows computing term during arctan phase', () => {
+    useCalculationStore.setState({ isCalculating: true, progressDigit: -567 });
+    const root = render(<SettingsScreen />).root;
+    expect(
+      root.findByProps({ testID: 'calc-progress' }).props.children,
+    ).toEqual('Computing… (term 567)');
   });
 });
 

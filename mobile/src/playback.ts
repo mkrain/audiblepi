@@ -308,6 +308,7 @@ export function switchToPrecomputed(): void {
 export async function startCalculation(
   rounds: number,
   onProgress: (digitIndex: number) => void,
+  onArcTanProgress?: (divisor: number) => void,
 ): Promise<boolean> {
   const s = requireServices();
   calcCancelled = false;
@@ -319,6 +320,9 @@ export async function startCalculation(
   s.piService.setUsePrecomputed(false);
   const sequence = await s.piService.calculate('base12', rounds, {
     onDigitCalculated: onProgress,
+    onArcTanDivisorCalculated: onArcTanProgress
+      ? ({ divisor }) => onArcTanProgress(divisor)
+      : undefined,
   });
   if (calcCancelled) {
     switchToPrecomputed();
