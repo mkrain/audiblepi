@@ -100,7 +100,7 @@ export class BigNumber {
   async arcTanAsync(
     multiplicand: number,
     reciprocal: number,
-    yieldEvery = 256,
+    yieldEveryMs = 16,
   ): Promise<void> {
     this.cancelRequested = false;
     const label = `${multiplicand}/${reciprocal}`;
@@ -114,7 +114,7 @@ export class BigNumber {
     const term = new BigNumber(this.maxDigits);
     let divisor = 1;
     let subtractTerm = true;
-    let iterations = 0;
+    let lastYield = Date.now();
 
     while (!this.cancelRequested) {
       x.divideByUintInPlace(reciprocal);
@@ -133,9 +133,11 @@ export class BigNumber {
 
       subtractTerm = !subtractTerm;
 
-      iterations++;
-      if (iterations % yieldEvery === 0) {
+      // Yield to the event loop at least every `yieldEveryMs` so touch
+      // events and navigation stay responsive during the heavy computation.
+      if (Date.now() - lastYield >= yieldEveryMs) {
         await yieldToEventLoop();
+        lastYield = Date.now();
       }
     }
   }

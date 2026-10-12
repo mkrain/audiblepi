@@ -310,6 +310,9 @@ export function switchToPrecomputed(): void {
  * completes. Progress is reported via the callbacks for the Player screen
  * to display. Call cancelBackgroundCalculation() to stop early and lock in
  * partial digits.
+ *
+ * Two-phase: first computes a small starter set (fast) so the user can play
+ * immediately, then computes the full requested digits in the background.
  */
 export function startBackgroundCalculation(
   rounds: number,
@@ -325,22 +328,59 @@ export function startBackgroundCalculation(
     usePlayerStore.getState().setPlaying(false);
   }
   s.piService.setUsePrecomputed(false);
-  // Run async — don't block the caller. The calculation yields periodically
-  // so the UI stays responsive.
+
+  // Throttle progress updates — the arctan fires per-term, which would be
+  // tens of thousands of React re-renders. Update at most every 100ms.
+  let lastProgressUpdate = 0;
+  const throttledArcTan = onArcTanProgress
+    ? (divisor: number) => {
+        const now = Date.now();
+        if (now - lastProgressUpdate >= 100) {
+          lastProgressUpdate = now;
+          onArcTanProgress(divisor);
+        }
+      }
+    : undefined;
+
   (async () => {
     await yieldToEventLoop();
-    const sequence = await s.piService.calculate('base12', rounds, {
+
+    // Phase 1: Quick starter digits so the user can play immediately.
+    // 100 digits computes in milliseconds.
+    const starterRounds = Math.min(100, rounds);
+    const starter = await s.piService.calculate('base12', starterRounds, {
       onDigitCalculated: onProgress,
-      onArcTanDivisorCalculated: onArcTanProgress
-        ? ({ divisor }) => onArcTanProgress(divisor)
+      onArcTanDivisorCalculated: throttledArcTan
+        ? ({ divisor }) => throttledArcTan(divisor)
         : undefined,
     });
     if (calcCancelled) {
-      // Partial digits were locked in by cancelBackgroundCalculation.
       onComplete?.(false);
       return;
     }
-    s.cursor.swapSource(sequence, sequence.length - 1);
+    // Swap to starter digits immediately — user can play now.
+    s.cursor.swapSource(starter, starter.length - 1);
+    usePlayerStore.getState().reset();
+
+    // Phase 2: Full computation in background (skip if starter was the full request).
+    if (starterRounds >= rounds) {
+      onComplete?.(true);
+      return;
+    }
+    const full = await s.piService.calculate('base12', rounds, {
+      onDigitCalculated: onProgress,
+      onArcTanDivisorCalculated: throttledArcTan
+        ? ({ divisor }) => throttledArcTan(divisor)
+        : undefined,
+    });
+    if (calcCancelled) {
+      onComplete?.(false);
+      return;
+    }
+    // Preserve cursor position when swapping to full digits.
+    const pos = s.cursor.index;
+    s.cursor.swapSource(full, full.length - 1);
+    s.cursor.seek(Math.min(pos, full.length - 1));
     usePlayerStore.getState().reset();
     onComplete?.(true);
   })().catch(() => undefined);
