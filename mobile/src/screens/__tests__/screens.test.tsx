@@ -209,7 +209,7 @@ describe('PlayerScreen calculation banner', () => {
     const root = render(<PlayerScreen />).root;
     expect(
       root.findByProps({ testID: 'calc-progress' }).props.children,
-    ).toEqual('Computing… term 513 of 1,000');
+    ).toEqual('Computing… term 513');
   });
 
   test('shows digit progress during extraction phase', () => {

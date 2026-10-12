@@ -128,7 +128,7 @@ export function PlayerScreen() {
         <View style={styles.calcBanner}>
           <Text testID="calc-progress" style={styles.calcProgress}>
             {progressDigit < 0
-              ? `Computing… term ${(-progressDigit).toLocaleString()} of ${targetDigits.toLocaleString()}`
+              ? `Computing… term ${(-progressDigit).toLocaleString()}`
               : `Digit ${progressDigit.toLocaleString()} of ${targetDigits.toLocaleString()}`}
           </Text>
           <TouchableOpacity

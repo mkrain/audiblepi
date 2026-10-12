@@ -96,10 +96,13 @@ export function SettingsScreen() {
       }
       // Switch to the Machin calculator: run in background with live progress
       // on the Player screen. Navigate there immediately.
+      // Reset digitCount to a supported computed value (it was 1M for precomputed).
+      const computedDigits = 1000;
+      setDigitCount(computedDigits);
       setUsePrecomputed(false);
-      calcStart(digitCount);
+      calcStart(computedDigits);
       startBackgroundCalculation(
-        digitCount,
+        computedDigits,
         (digitIndex) => calcSetProgress(digitIndex),
         (divisor) => calcSetProgress(-divisor),
         (completed) => {
@@ -112,7 +115,7 @@ export function SettingsScreen() {
       );
       navigation.navigate('Player');
     },
-    [calcFinish, calcSetProgress, calcStart, digitCount, setUsePrecomputed, navigation],
+    [calcFinish, calcSetProgress, calcStart, setDigitCount, setUsePrecomputed, navigation],
   );
 
   return (
