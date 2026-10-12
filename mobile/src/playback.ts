@@ -18,6 +18,7 @@ import {
 import { PiDigitReader, PiDigitSequence } from './lib/pi-digits';
 import { readDigitFile } from './lib/pi-digits-store';
 import { PiService } from './lib/pi-service';
+import { yieldToEventLoop } from './lib/big-number';
 import { usePlayerStore } from './state/player';
 import { DEFAULT_SETTINGS, useSettingsStore } from './state/settings';
 
@@ -289,6 +290,9 @@ export function setInstrumentId(id: number): void {
 
 /** Public for the settings screen's precomputed toggle. */
 export function switchToPrecomputed(): void {
+  // Cancel any in-flight calculation first — otherwise it keeps hogging the
+  // JS thread after we've switched back.
+  cancelCalculation();
   const s = requireServices();
   s.piService.setUsePrecomputed(true);
   useSettingsStore.getState().setUsePrecomputed(true);
@@ -318,6 +322,9 @@ export async function startCalculation(
     usePlayerStore.getState().setPlaying(false);
   }
   s.piService.setUsePrecomputed(false);
+  // Yield so the calculation dialog renders before the heavy arctan work
+  // starts — otherwise the JS thread blocks and the UI appears hung.
+  await yieldToEventLoop();
   const sequence = await s.piService.calculate('base12', rounds, {
     onDigitCalculated: onProgress,
     onArcTanDivisorCalculated: onArcTanProgress
