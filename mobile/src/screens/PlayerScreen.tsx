@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import {
@@ -78,7 +79,7 @@ export function PlayerScreen() {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <Text testID="counter" style={styles.counter}>
         digit {digitIndex + 1} of {total}
       </Text>
@@ -171,7 +172,7 @@ export function PlayerScreen() {
           <Ionicons name="play-skip-forward" size={36} color={colors.text} />
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -181,7 +182,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     alignItems: 'center',
     paddingHorizontal: spacing.md,
-    paddingTop: spacing.lg,
   },
   counter: {
     alignSelf: 'flex-start',
