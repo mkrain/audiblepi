@@ -1,0 +1,11 @@
+pluginManagement { includeBuild("../node_modules/@react-native/gradle-plugin") }
+plugins { id("com.facebook.react.settings") }
+extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
+rootProject.name = 'AudiblePi'
+include ':app'
+includeBuild('../node_modules/@react-native/gradle-plugin')
+
+// Expo modules autolinking (added manually: install-expo-modules does not
+// support react-native 0.87 yet). See https://docs.expo.dev/bare/installing-expo-modules/
+apply from: new File(["node", "--print", "require.resolve('expo/package.json')"].execute(null, rootDir).text.trim(), "../scripts/autolinking.gradle")
+useExpoModules()

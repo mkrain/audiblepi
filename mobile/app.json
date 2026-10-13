@@ -1,0 +1,8 @@
+{
+  "name": "AudiblePi",
+  "displayName": "AudiblePi",
+  "plugins": [
+    "expo-asset",
+    "expo-audio"
+  ]
+}
