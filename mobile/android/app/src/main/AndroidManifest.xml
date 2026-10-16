@@ -11,12 +11,9 @@
     android:usesCleartextTraffic="${usesCleartextTraffic}"
     android:supportsRtl="true">
 
-    <!-- TODO(ADMOB): Replace with your real AdMob app ID from https://apps.admob.com
-         (Apps > AudiblePi > App settings). The value below is Google's test app ID;
-         it must be swapped before any store release. -->
     <meta-data
       android:name="com.google.android.gms.ads.APPLICATION_ID"
-      android:value="ca-app-pub-3940256099942544~3347511713" />
+      android:value="ca-app-pub-6432548326018233~4835659086" />
 
     <activity
       android:name=".MainActivity"
