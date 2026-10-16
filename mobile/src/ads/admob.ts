@@ -8,13 +8,20 @@
  * `TODO(ADMOB)`.
  */
 
+import { Platform } from 'react-native';
 import { TestIds } from 'react-native-google-mobile-ads';
 
-// TODO(ADMOB): Replace with your real AdMob banner unit id.
-// AdMob console > Apps > AudiblePi > Ad units > Banner. Keep one unit id per
-// platform (AdMob issues separate ids for Android and iOS).
-// Currently: Google's test banner id (per-platform via TestIds.BANNER).
-export const ADMOB_BANNER_UNIT_ID: string = TestIds.BANNER;
+// TODO(ADMOB): Replace with your real AdMob banner unit ids.
+// AdMob console > Apps > [your app] > Ad units > Banner. AdMob issues
+// separate unit ids per platform (note the / separator, vs ~ for app ids).
+// Currently: Google's test banner ids (per-platform via TestIds.BANNER).
+const BANNER_UNIT_IDS = {
+  android: TestIds.BANNER,
+  ios: TestIds.BANNER,
+} as const;
+
+export const ADMOB_BANNER_UNIT_ID: string =
+  Platform.OS === 'ios' ? BANNER_UNIT_IDS.ios : BANNER_UNIT_IDS.android;
 
 // TODO(ADMOB): Replace with your real AdMob app ids.
 // AdMob console > Apps > AudiblePi > App settings. These live in the native
