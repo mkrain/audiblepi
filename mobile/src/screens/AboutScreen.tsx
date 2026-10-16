@@ -7,11 +7,9 @@
  */
 
 import {
-  Linking,
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 
@@ -24,14 +22,6 @@ const ABOUT = {
   additionalNotes:
     'Options for both calculating pi and playing it from the embedded file.',
   version: '1.2.1.0',
-  links: [
-    { label: 'My blog:', content: 'Tech Space', url: 'http://jeremiahmedina.blogspot.com/' },
-    {
-      label: 'Email:',
-      content: 'mkrain@hotmail.com',
-      url: 'mailto:mkrain@hotmail.com?subject=audiblepi',
-    },
-  ],
 };
 
 const SECTIONS: { title: string; body: string }[] = [
@@ -62,28 +52,22 @@ In order to play the 12 standard notes (C, C#, D, D#, E, F, F#, G, G#, A, A#, B)
   {
     title: 'Tips',
     body: `How it works
-Playing the calculated pi value
-- Simply click one of the three visible notes and the sound will play.
-- If you want the notes to play continuously press the play button; the notes will play until you reach the end, unless you have 'loop sound' selected.
-- Press the previous arrow to return to the previous note, based on the skip amount.
-- Similarly press the next arrow to advance the notes by the skip amount.
-- You can play notes at the same time they are being auto played.
-- Click on the instrument icon on the main menu to cycle through them.
+- The big note shows the note for the current digit of pi; the strip below it plays the two notes before and after, and supports multi-touch chords.
+- Drag the position slider (or tap it) to jump to any digit.
+- Press play and the notes play continuously until the end, unless Loop Sound is on.
+- The previous/next buttons step by the skip amount.
+- Tap the instrument name in the header to cycle through instruments.
 
 Use The Settings Menu
 The settings menu is your friend; you can customize much of the app there
-- Instrument: Let the fun begin, violin is awesome but use the one you want.
-- Prev/Next Skip: When using auto or manual advance this many digits will be skipped.
-- Tempo: In milliseconds, time between each sound, try 125ms for furious mode!
-- # Pi Digits: number of digits to calculate, more digits means more time.
-- Loop Sound: When on, digits are continually played, looping at the end.
-- Precomputed Digits: This will switch from calculated digits to precomputed digits.`,
+- Instrument: pick the sound you want to hear.
+- Previous/Next Skip: when stepping manually or auto-playing, this many digits will be skipped.
+- Tempo: in milliseconds, the time between each sound — try 125ms for furious mode!
+- Number of Pi Digits: how many digits to calculate (calculated mode only; precomputed mode always uses the full 1,000,000 from the embedded file).
+- Loop Sound: when on, digits play continually, looping at the end.
+- Precomputed Digits: switch between the embedded 1,000,000-digit file and the Machin-formula calculator.`,
   },
 ];
-
-function openLink(url: string): void {
-  void Linking.openURL(url).catch(() => undefined);
-}
 
 export function AboutScreen() {
   return (
@@ -101,15 +85,6 @@ export function AboutScreen() {
 
       <Text style={styles.label}>Version:</Text>
       <Text style={styles.body}>{ABOUT.version}</Text>
-
-      {ABOUT.links.map((link) => (
-        <View key={link.url} style={styles.linkRow}>
-          <Text style={styles.label}>{link.label} </Text>
-          <TouchableOpacity onPress={() => openLink(link.url)} testID={`about-link-${link.content}`}>
-            <Text style={styles.link}>{link.content}</Text>
-          </TouchableOpacity>
-        </View>
-      ))}
 
       {SECTIONS.map((section) => (
         <View key={section.title} style={styles.section}>
@@ -150,16 +125,6 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: fontSizes.body,
     lineHeight: 24,
-  },
-  linkRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: spacing.xs,
-  },
-  link: {
-    color: colors.accent,
-    fontSize: fontSizes.body,
-    textDecorationLine: 'underline',
   },
   section: {
     marginTop: spacing.lg,
