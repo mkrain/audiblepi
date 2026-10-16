@@ -359,10 +359,11 @@ const styles = StyleSheet.create({
     color: colors.accent,
     fontSize: 56,
     fontWeight: '200',
-    // Fixed width keeps the layout stable when switching between natural
-    // notes (e.g. "D") and accidentals (e.g. "D#") — no jitter.
+    // Fixed width + left alignment keeps the layout stable when switching
+    // between natural notes (e.g. "D") and accidentals (e.g. "D#") —
+    // centered text would still shift within the box.
     minWidth: 160,
-    textAlign: 'center',
+    textAlign: 'left',
   },
   heroDigit: {
     color: colors.muted,
