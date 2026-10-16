@@ -60,6 +60,14 @@ class Cursor {
     return this.source.length;
   }
 
+  /** Peek at the digit at an absolute index without moving the cursor. */
+  peekDigitAt(index: number): string {
+    if (index < 0 || index >= this.source.length) {
+      return '';
+    }
+    return this.source.digitAt(index);
+  }
+
   /** Playable digit count (1-based for the "digit N of M" counter). */
   get total(): number {
     return Math.min(this.source.length, this.bound + 1);
@@ -247,6 +255,84 @@ export function getVisibleNotes(): {
 
 export function getDigitTotal(): number {
   return services?.cursor.total ?? 0;
+}
+
+/** Map a raw digit char to a note name, or null when missing/invalid. */
+function noteForDigitChar(digit: string): NoteName | null {
+  if (!digit) {
+    return null;
+  }
+  try {
+    return noteNameForDigit(digit);
+  } catch {
+    return null;
+  }
+}
+
+export interface StripNote {
+  /** Offset from the cursor (-2..+2); 0 is the current note. */
+  offset: number;
+  /** 0-based absolute digit index. */
+  digitIndex: number;
+  note: NoteName | null;
+}
+
+/**
+ * Five notes centered on the cursor for the tappable note strip.
+ * Out-of-range slots have note: null.
+ */
+export function getNoteStrip(): StripNote[] {
+  const s = services;
+  if (!s) {
+    return [];
+  }
+  const result: StripNote[] = [];
+  for (let offset = -2; offset <= 2; offset++) {
+    const digitIndex = s.cursor.index + offset;
+    result.push({
+      offset,
+      digitIndex,
+      note: noteForDigitChar(s.cursor.peekDigitAt(digitIndex)),
+    });
+  }
+  return result;
+}
+
+/**
+ * The next `count` notes after the cursor for the "up next" roll.
+ * Out-of-range slots have note: null.
+ */
+export function getUpcomingNotes(count: number): StripNote[] {
+  const s = services;
+  if (!s) {
+    return [];
+  }
+  const result: StripNote[] = [];
+  for (let i = 1; i <= count; i++) {
+    const digitIndex = s.cursor.index + i;
+    result.push({
+      offset: i,
+      digitIndex,
+      note: noteForDigitChar(s.cursor.peekDigitAt(digitIndex)),
+    });
+  }
+  return result;
+}
+
+/** Tap-to-play the note at an offset from the cursor without moving it. */
+export function tapNoteAt(offset: number): void {
+  const s = requireServices();
+  const digit = s.cursor.peekDigitAt(s.cursor.index + offset);
+  if (digit) {
+    s.controller.tapDigit(digit);
+  }
+}
+
+/** Seek the cursor to an absolute digit index (for the scrubber). */
+export function seekToDigit(index: number): void {
+  const s = requireServices();
+  s.cursor.seek(index);
+  syncIndex();
 }
 
 export async function togglePlay(): Promise<void> {

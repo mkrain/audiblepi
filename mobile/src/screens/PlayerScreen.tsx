@@ -1,13 +1,12 @@
 /**
  * Player screen — port of the WP7 Panorama's first item (PiViewModel).
  *
- * Prev/current/next note buttons (tap = hear that note), a large
- * current-note display, the "digit N of M" counter, an instrument-cycle
- * button, the base-12 indicator, and the prev / play-pause / next
- * transport row.
+ * Compact header (digit counter + base badge + instrument), hero note
+ * display with digit→note mapping, a 5-note tappable strip, a position
+ * scrubber, an "up next" piano roll, and the transport row.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import {
   Image,
   StyleSheet,
@@ -22,10 +21,13 @@ import {
   cancelBackgroundCalculation,
   cycleInstrument,
   getDigitTotal,
+  getNoteStrip,
+  getUpcomingNotes,
   getVisibleNotes,
+  seekToDigit,
   stepNext,
   stepPrevious,
-  tapNote,
+  tapNoteAt,
   togglePlay,
 } from '../playback';
 import { usePlayerStore } from '../state/player';
@@ -34,25 +36,93 @@ import { useCalculationStore } from '../state/calculation';
 import { iconForInstrument } from '../ui/instrument-icons';
 import { colors, fontSizes, spacing } from '../ui/theme';
 
-function NoteButton({
+const UPCOMING_COUNT = 7;
+
+function StripKey({
   testID,
   label,
+  digitLabel,
+  highlighted,
+  disabled,
   onPress,
 }: {
   testID: string;
   label: string | null;
+  digitLabel: string;
+  highlighted: boolean;
+  disabled: boolean;
   onPress: () => void;
 }) {
   return (
     <TouchableOpacity
       testID={testID}
-      style={[styles.noteButton, !label && styles.noteButtonDisabled]}
+      style={[
+        styles.stripKey,
+        highlighted && styles.stripKeyCurrent,
+        disabled && styles.stripKeyDisabled,
+      ]}
       onPressIn={onPress}
-      disabled={!label}
+      disabled={disabled}
       activeOpacity={0.6}
     >
-      <Text style={styles.noteButtonText}>{label ?? '–'}</Text>
+      <Text
+        style={[styles.stripKeyNote, highlighted && styles.stripKeyNoteCurrent]}
+      >
+        {label ?? '–'}
+      </Text>
+      <Text style={styles.stripKeyDigit}>{digitLabel}</Text>
     </TouchableOpacity>
+  );
+}
+
+function Scrubber({ value, max }: { value: number; max: number }) {
+  const trackRef = useRef<View>(null);
+
+  const seekFromTouch = useCallback(
+    (x: number) => {
+      const track = trackRef.current as unknown as {
+        measure: (
+          cb: (
+            x: number,
+            y: number,
+            width: number,
+            height: number,
+            pageX: number,
+            pageY: number,
+          ) => void,
+        ) => void;
+      } | null;
+      if (!track || typeof track.measure !== 'function') {
+        return;
+      }
+      track.measure((_x, _y, width, _h, pageX) => {
+        const ratio = Math.max(0, Math.min(1, (x - pageX) / Math.max(1, width)));
+        seekToDigit(Math.round(ratio * Math.max(0, max - 1)));
+      });
+    },
+    [max],
+  );
+
+  const ratio = max > 1 ? value / (max - 1) : 0;
+
+  return (
+    <View style={styles.scrubWrap}>
+      <View style={styles.scrubLabels}>
+        <Text style={styles.scrubLabel}>1</Text>
+        <Text style={styles.scrubLabel}>{max.toLocaleString()}</Text>
+      </View>
+      <View
+        ref={trackRef}
+        testID="scrubber"
+        style={styles.scrubTrack}
+        onStartShouldSetResponder={() => true}
+        onResponderGrant={(e) => seekFromTouch(e.nativeEvent.pageX)}
+        onResponderMove={(e) => seekFromTouch(e.nativeEvent.pageX)}
+      >
+        <View style={[styles.scrubFill, { width: `${ratio * 100}%` }]} />
+        <View style={[styles.scrubKnob, { left: `${ratio * 100}%` }]} />
+      </View>
+    </View>
   );
 }
 
@@ -65,6 +135,8 @@ export function PlayerScreen() {
   const targetDigits = useCalculationStore((s) => s.targetDigits);
 
   const notes = getVisibleNotes();
+  const strip = getNoteStrip();
+  const upcoming = getUpcomingNotes(UPCOMING_COUNT);
   const total = getDigitTotal();
 
   const onTogglePlay = useCallback(() => {
@@ -78,52 +150,104 @@ export function PlayerScreen() {
     // to revert.
   }, []);
 
+  // Back-compat testIDs for the three central strip keys.
+  const testIdForOffset = (offset: number): string => {
+    switch (offset) {
+      case -2:
+        return 'note-prev2';
+      case -1:
+        return 'note-previous';
+      case 0:
+        return 'note-current';
+      case 1:
+        return 'note-next';
+      case 2:
+        return 'note-next2';
+      default:
+        return `note-offset-${offset}`;
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <Text testID="counter" style={styles.counter}>
-        digit {digitIndex + 1} of {total}
-      </Text>
-
-      <View style={styles.topRow}>
-        <View testID="base-indicator" style={styles.baseBadge}>
-          <Text style={styles.baseBadgeText}>BASE 12</Text>
+      {/* Compact header: counter + base badge + instrument */}
+      <View style={styles.header}>
+        <Text testID="counter" style={styles.counter}>
+          digit {(digitIndex + 1).toLocaleString()} of {total.toLocaleString()}
+        </Text>
+        <View style={styles.headerRight}>
+          <View testID="base-indicator" style={styles.baseBadge}>
+            <Text style={styles.baseBadgeText}>BASE 12</Text>
+          </View>
+          <TouchableOpacity
+            testID="instrument-button"
+            style={styles.instrumentButton}
+            onPress={cycleInstrument}
+            activeOpacity={0.7}
+          >
+            <Image
+              source={iconForInstrument(instrumentId)}
+              style={styles.instrumentIcon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          testID="instrument-button"
-          style={styles.instrumentButton}
-          onPress={cycleInstrument}
-          activeOpacity={0.7}
-        >
-          <Image
-            source={iconForInstrument(instrumentId)}
-            style={styles.instrumentIcon}
-            resizeMode="contain"
+      </View>
+
+      {/* Hero: current note + digit→note mapping */}
+      <View style={styles.hero}>
+        <Text testID="current-note-name" style={styles.heroNote}>
+          {notes.current ?? '–'}
+        </Text>
+        <Text style={styles.heroDigit}>
+          digit {(digitIndex + 1).toLocaleString()} → {notes.current ?? '–'}
+        </Text>
+      </View>
+
+      {/* 5-note tappable strip */}
+      <View style={styles.strip}>
+        {strip.map((s) => (
+          <StripKey
+            key={s.offset}
+            testID={testIdForOffset(s.offset)}
+            label={s.note}
+            digitLabel={
+              s.note ? (s.digitIndex + 1).toLocaleString() : '·'
+            }
+            highlighted={s.offset === 0}
+            disabled={!s.note}
+            onPress={() => tapNoteAt(s.offset)}
           />
-        </TouchableOpacity>
+        ))}
       </View>
 
-      <Text testID="current-note-name" style={styles.currentNote}>
-        {notes.current ?? '–'}
-      </Text>
+      {/* Position scrubber */}
+      <Scrubber value={digitIndex} max={total} />
 
-      <View style={styles.notesRow}>
-        <NoteButton
-          testID="note-previous"
-          label={notes.previous}
-          onPress={() => tapNote('previous')}
-        />
-        <NoteButton
-          testID="note-current"
-          label={notes.current}
-          onPress={() => tapNote('current')}
-        />
-        <NoteButton
-          testID="note-next"
-          label={notes.next}
-          onPress={() => tapNote('next')}
-        />
+      {/* Up next roll */}
+      <View style={styles.rollWrap}>
+        <Text style={styles.rollLabel}>UP NEXT</Text>
+        <View style={styles.roll}>
+          {upcoming.map((u, i) => (
+            <View
+              key={u.digitIndex}
+              testID={i === 0 ? 'upnext-first' : `upnext-${i}`}
+              style={[styles.rollCell, i === 0 && styles.rollCellHit]}
+            >
+              <Text
+                style={[
+                  styles.rollCellText,
+                  i === 0 && styles.rollCellTextHit,
+                ]}
+              >
+                {u.note ?? '·'}
+              </Text>
+            </View>
+          ))}
+        </View>
       </View>
 
+      {/* Background-calculation banner */}
       {isCalculating && (
         <View style={styles.calcBanner}>
           <Text testID="calc-progress" style={styles.calcProgress}>
@@ -142,6 +266,7 @@ export function PlayerScreen() {
         </View>
       )}
 
+      {/* Transport */}
       <View style={styles.transportRow}>
         <TouchableOpacity
           testID="transport-previous"
@@ -149,7 +274,7 @@ export function PlayerScreen() {
           onPress={stepPrevious}
           activeOpacity={0.6}
         >
-          <Ionicons name="play-skip-back" size={36} color={colors.text} />
+          <Ionicons name="play-skip-back" size={32} color={colors.text} />
         </TouchableOpacity>
         <TouchableOpacity
           testID="transport-play"
@@ -159,7 +284,7 @@ export function PlayerScreen() {
         >
           <Ionicons
             name={isPlaying ? 'pause' : 'play'}
-            size={44}
+            size={40}
             color={colors.text}
           />
         </TouchableOpacity>
@@ -169,7 +294,7 @@ export function PlayerScreen() {
           onPress={stepNext}
           activeOpacity={0.6}
         >
-          <Ionicons name="play-skip-forward" size={36} color={colors.text} />
+          <Ionicons name="play-skip-forward" size={32} color={colors.text} />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -183,18 +308,172 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.md,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    marginBottom: spacing.sm,
+  },
   counter: {
-    alignSelf: 'flex-start',
     color: colors.accent,
+    fontSize: fontSizes.body,
+    fontWeight: '600',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  baseBadge: {
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderRadius: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  baseBadgeText: {
+    color: colors.accent,
+    fontSize: fontSizes.tiny,
+    fontWeight: '600',
+  },
+  instrumentButton: {
+    width: 40,
+    height: 40,
+  },
+  instrumentIcon: {
+    width: 40,
+    height: 40,
+  },
+  hero: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  heroNote: {
+    color: colors.accent,
+    fontSize: 56,
+    fontWeight: '200',
+  },
+  heroDigit: {
+    color: colors.muted,
+    fontSize: fontSizes.body,
+  },
+  strip: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: spacing.xs,
+    marginVertical: spacing.sm,
+  },
+  stripKey: {
+    flex: 1,
+    height: 92,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    borderWidth: 2,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+  },
+  stripKeyCurrent: {
+    borderColor: colors.accent,
+    backgroundColor: '#0d1f2a',
+  },
+  stripKeyDisabled: {
+    opacity: 0.4,
+  },
+  stripKeyNote: {
+    color: colors.text,
     fontSize: fontSizes.title,
-    marginBottom: spacing.md,
+    fontWeight: '700',
+  },
+  stripKeyNoteCurrent: {
+    color: colors.accent,
+  },
+  stripKeyDigit: {
+    color: colors.muted,
+    fontSize: fontSizes.tiny,
+  },
+  scrubWrap: {
+    width: '100%',
+    marginVertical: spacing.xs,
+  },
+  scrubLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.xs,
+  },
+  scrubLabel: {
+    color: colors.muted,
+    fontSize: fontSizes.tiny,
+  },
+  scrubTrack: {
+    height: 28,
+    justifyContent: 'center',
+  },
+  scrubFill: {
+    position: 'absolute',
+    left: 0,
+    height: 6,
+    backgroundColor: colors.accent,
+    borderRadius: 3,
+  },
+  scrubKnob: {
+    position: 'absolute',
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: colors.accent,
+    marginLeft: -8,
+  },
+  rollWrap: {
+    width: '100%',
+    paddingVertical: spacing.md,
+  },
+  rollLabel: {
+    color: colors.muted,
+    fontSize: fontSizes.tiny,
+    letterSpacing: 1,
+    marginBottom: spacing.sm,
+  },
+  roll: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  rollCell: {
+    flex: 1,
+    aspectRatio: 1,
+    borderRadius: 8,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rollCellHit: {
+    backgroundColor: colors.accentDim,
+    borderColor: colors.accent,
+  },
+  rollCellText: {
+    color: colors.text,
+    fontSize: fontSizes.body,
+    fontWeight: '600',
+  },
+  rollCellTextHit: {
+    color: colors.text,
   },
   calcBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    marginBottom: spacing.md,
+    marginVertical: spacing.sm,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     backgroundColor: colors.surface,
@@ -208,76 +487,24 @@ const styles = StyleSheet.create({
   calcCancel: {
     padding: spacing.xs,
   },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: spacing.sm,
-  },
-  baseBadge: {
-    borderWidth: 1,
-    borderColor: colors.accent,
-    borderRadius: 4,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  baseBadgeText: {
-    color: colors.accent,
-    fontSize: fontSizes.small,
-    fontWeight: '600',
-  },
-  instrumentButton: {
-    width: 56,
-    height: 56,
-  },
-  instrumentIcon: {
-    width: 56,
-    height: 56,
-  },
-  currentNote: {
-    color: colors.accent,
-    fontSize: fontSizes.giant,
-    fontWeight: '200',
-    marginVertical: spacing.md,
-  },
-  notesRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    width: '100%',
-    marginBottom: spacing.xl,
-  },
-  noteButton: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: colors.surfaceRaised,
-    borderWidth: 2,
-    borderColor: colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  noteButtonDisabled: {
-    borderColor: colors.border,
-  },
-  noteButtonText: {
-    color: colors.text,
-    fontSize: fontSizes.title,
-    fontWeight: '600',
-  },
   transportRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-evenly',
+    justifyContent: 'center',
     width: '100%',
-    marginTop: 'auto',
-    marginBottom: spacing.xl,
+    gap: spacing.xl,
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
   },
   transportButton: {
-    padding: spacing.md,
+    padding: spacing.sm,
   },
   playButton: {
     backgroundColor: colors.accentDim,
-    borderRadius: 40,
+    borderRadius: 36,
+    width: 72,
+    height: 72,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

@@ -168,6 +168,14 @@ export class PiDigitReader {
     return this.index;
   }
 
+  /** Random access peek without moving the cursor; '' when out of range. */
+  digitAt(index: number): string {
+    if (index < 0 || index >= this.digits.length) {
+      return '';
+    }
+    return this.digits[index] ?? '';
+  }
+
   /** Byte-level read mirroring PiStreamIterator.ReadBytes (digits are ASCII). */
   readBytes(buffer: Uint8Array, offset: number, count: number): number {
     if (offset < 0) throw new Error('offset is less than 0');

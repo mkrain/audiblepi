@@ -55,11 +55,15 @@ jest.mock('@react-navigation/native', () => ({
 
 jest.mock('../../playback', () => ({
   getVisibleNotes: jest.fn(),
+  getNoteStrip: jest.fn(),
+  getUpcomingNotes: jest.fn(),
   getDigitTotal: jest.fn(),
   togglePlay: jest.fn(),
   stepNext: jest.fn(),
   stepPrevious: jest.fn(),
   tapNote: jest.fn(),
+  tapNoteAt: jest.fn(),
+  seekToDigit: jest.fn(),
   cycleInstrument: jest.fn(),
   setInstrumentId: jest.fn(),
   startCalculation: jest.fn(),
@@ -77,12 +81,16 @@ import {
   cancelCalculation,
   cycleInstrument,
   getDigitTotal,
+  getNoteStrip,
+  getUpcomingNotes,
   getVisibleNotes,
+  seekToDigit,
   startBackgroundCalculation,
   startCalculation,
   stepNext,
   stepPrevious,
   tapNote,
+  tapNoteAt,
   togglePlay,
 } from '../../playback';
 import { useCalculationStore } from '../../state/calculation';
@@ -90,11 +98,15 @@ import { usePlayerStore } from '../../state/player';
 import { useSettingsStore } from '../../state/settings';
 
 const mockGetVisibleNotes = getVisibleNotes as jest.Mock;
+const mockGetNoteStrip = getNoteStrip as jest.Mock;
+const mockGetUpcomingNotes = getUpcomingNotes as jest.Mock;
 const mockGetDigitTotal = getDigitTotal as jest.Mock;
 const mockTogglePlay = togglePlay as jest.Mock;
 const mockStepNext = stepNext as jest.Mock;
 const mockStepPrevious = stepPrevious as jest.Mock;
 const mockTapNote = tapNote as jest.Mock;
+const mockTapNoteAt = tapNoteAt as jest.Mock;
+const mockSeekToDigit = seekToDigit as jest.Mock;
 const mockCycleInstrument = cycleInstrument as jest.Mock;
 const mockStartCalculation = startCalculation as jest.Mock;
 const mockCancelCalculation = cancelCalculation as jest.Mock;
@@ -109,6 +121,22 @@ describe('PlayerScreen', () => {
       current: 'C#',
       next: 'D',
     });
+    mockGetNoteStrip.mockReturnValue([
+      { offset: -2, digitIndex: 39, note: null },
+      { offset: -1, digitIndex: 40, note: 'C' },
+      { offset: 0, digitIndex: 41, note: 'C#' },
+      { offset: 1, digitIndex: 42, note: 'D' },
+      { offset: 2, digitIndex: 43, note: 'D#' },
+    ]);
+    mockGetUpcomingNotes.mockReturnValue([
+      { offset: 1, digitIndex: 42, note: 'D' },
+      { offset: 2, digitIndex: 43, note: 'D#' },
+      { offset: 3, digitIndex: 44, note: 'E' },
+      { offset: 4, digitIndex: 45, note: 'F' },
+      { offset: 5, digitIndex: 46, note: 'F#' },
+      { offset: 6, digitIndex: 47, note: 'G' },
+      { offset: 7, digitIndex: 48, note: 'G#' },
+    ]);
     mockGetDigitTotal.mockReturnValue(1000);
     mockTogglePlay.mockResolvedValue(undefined);
     mockStartCalculation.mockResolvedValue(true);
@@ -116,14 +144,14 @@ describe('PlayerScreen', () => {
     usePlayerStore.getState().reset();
   });
 
-  test('renders counter, note buttons and transport controls', () => {
+  test('renders counter, note strip and transport controls', () => {
     usePlayerStore.setState({ digitIndex: 41 });
     const root = render(<PlayerScreen />).root;
     expect(root.findByProps({ testID: 'counter' }).props.children).toEqual([
       'digit ',
-      42,
+      '42',
       ' of ',
-      1000,
+      '1,000',
     ]);
     expect(root.findByProps({ testID: 'note-previous' }).props.label).toBe(
       'C',
@@ -132,11 +160,15 @@ describe('PlayerScreen', () => {
       'C#',
     );
     expect(root.findByProps({ testID: 'note-next' }).props.label).toBe('D');
+    expect(root.findByProps({ testID: 'note-prev2' })).toBeTruthy();
+    expect(root.findByProps({ testID: 'note-next2' })).toBeTruthy();
     expect(root.findByProps({ testID: 'base-indicator' })).toBeTruthy();
     expect(root.findByProps({ testID: 'instrument-button' })).toBeTruthy();
     expect(root.findByProps({ testID: 'transport-play' })).toBeTruthy();
     expect(root.findByProps({ testID: 'transport-previous' })).toBeTruthy();
     expect(root.findByProps({ testID: 'transport-next' })).toBeTruthy();
+    expect(root.findByProps({ testID: 'scrubber' })).toBeTruthy();
+    expect(root.findByProps({ testID: 'upnext-first' })).toBeTruthy();
   });
 
   test('transport buttons call playback actions', () => {
@@ -149,12 +181,22 @@ describe('PlayerScreen', () => {
     expect(mockStepPrevious).toHaveBeenCalledTimes(1);
   });
 
-  test('tapping a note button sounds that note', () => {
+  test('tapping a strip key sounds that offset note', () => {
     const root = render(<PlayerScreen />).root;
     root.findByProps({ testID: 'note-current' }).props.onPress();
-    expect(mockTapNote).toHaveBeenCalledWith('current');
+    expect(mockTapNoteAt).toHaveBeenCalledWith(0);
+    root.findByProps({ testID: 'note-next' }).props.onPress();
+    expect(mockTapNoteAt).toHaveBeenCalledWith(1);
     root.findByProps({ testID: 'instrument-button' }).props.onPress();
     expect(mockCycleInstrument).toHaveBeenCalledTimes(1);
+  });
+
+  test('hero shows digit to note mapping', () => {
+    usePlayerStore.setState({ digitIndex: 41 });
+    const root = render(<PlayerScreen />).root;
+    expect(root.findByProps({ testID: 'current-note-name' }).props.children).toBe(
+      'C#',
+    );
   });
 });
 

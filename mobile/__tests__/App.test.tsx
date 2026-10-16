@@ -20,11 +20,21 @@ jest.mock('react-native-mmkv', () => ({
 jest.mock('../src/playback', () => ({
   initApp: jest.fn(),
   getVisibleNotes: jest.fn(() => ({ previous: null, current: 'C', next: 'D' })),
+  getNoteStrip: jest.fn(() => [
+    { offset: -2, digitIndex: 0, note: null },
+    { offset: -1, digitIndex: 0, note: null },
+    { offset: 0, digitIndex: 0, note: 'C' },
+    { offset: 1, digitIndex: 1, note: 'D' },
+    { offset: 2, digitIndex: 2, note: null },
+  ]),
+  getUpcomingNotes: jest.fn(() => []),
   getDigitTotal: jest.fn(() => 1000),
   togglePlay: jest.fn(),
   stepNext: jest.fn(),
   stepPrevious: jest.fn(),
   tapNote: jest.fn(),
+  tapNoteAt: jest.fn(),
+  seekToDigit: jest.fn(),
   cycleInstrument: jest.fn(),
 }));
 

@@ -49,6 +49,17 @@ describe('PiDigitSequence (port of ComputedPi)', () => {
 });
 
 describe('PiDigitReader (port of PiStreamIterator)', () => {
+  test('digitAt peeks without moving the cursor', () => {
+    const reader = new PiDigitReader('31415926');
+    expect(reader.digitAt(0)).toBe('3');
+    expect(reader.digitAt(3)).toBe('1');
+    expect(reader.digitAt(7)).toBe('6');
+    expect(reader.digitAt(-1)).toBe('');
+    expect(reader.digitAt(8)).toBe('');
+    // Cursor untouched
+    expect(reader.current).toBe('3');
+  });
+
   test('seek refreshes the previous/current/next window', () => {
     const reader = new PiDigitReader('31415926');
     expect(reader.current).toBe('3');
