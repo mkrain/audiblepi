@@ -1,8 +1,12 @@
 {
-  "name": "AudiblePi",
   "displayName": "AudiblePi",
+  "name": "AudiblePi",
   "plugins": [
     "expo-asset",
     "expo-audio"
-  ]
+  ],
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-6432548326018233~4835659086",
+    "ios_app_id": "ca-app-pub-6432548326018233~1722410582"
+  }
 }
