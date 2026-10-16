@@ -88,24 +88,15 @@ export function SettingsScreen() {
   const calcSetProgress = useCalculationStore((s) => s.setProgress);
   const calcFinish = useCalculationStore((s) => s.finish);
 
-  const onTogglePrecomputed = useCallback(
-    (value: boolean) => {
-      if (value) {
-        switchToPrecomputed();
-        calcFinish();
-        return;
-      }
-      // Switch to the Machin calculator: run in background with live progress
-      // on the Player screen. Navigate there immediately.
+  const startComputed = useCallback(
+    (rounds: number) => {
       // Cancel any existing calculation first (defensive).
       cancelBackgroundCalculation();
-      // Reset digitCount to a supported computed value (it was 1M for precomputed).
-      const computedDigits = 1000;
-      setDigitCount(computedDigits);
+      setDigitCount(rounds);
       setUsePrecomputed(false);
-      calcStart(computedDigits);
+      calcStart(rounds);
       startBackgroundCalculation(
-        computedDigits,
+        rounds,
         (digitIndex) => calcSetProgress(digitIndex),
         (divisor) => calcSetProgress(-divisor),
         (completed) => {
@@ -116,9 +107,37 @@ export function SettingsScreen() {
           // precomputed back on — the partial digits remain active.
         },
       );
+    },
+    [calcFinish, calcSetProgress, calcStart, setDigitCount, setUsePrecomputed],
+  );
+
+  const onTogglePrecomputed = useCallback(
+    (value: boolean) => {
+      if (value) {
+        switchToPrecomputed();
+        calcFinish();
+        return;
+      }
+      // Switch to the Machin calculator: run in background with live progress
+      // on the Player screen. Navigate there immediately.
+      // Reset digitCount to a supported computed value (it was 1M for precomputed).
+      startComputed(1000);
       navigation.navigate('Player');
     },
-    [calcFinish, calcSetProgress, calcStart, setDigitCount, setUsePrecomputed, navigation],
+    [startComputed, navigation],
+  );
+
+  const onDigitCountChange = useCallback(
+    (value: number) => {
+      // In calculated mode, changing the digit count restarts the background
+      // computation with the new target.
+      if (!useSettingsStore.getState().usePrecomputed) {
+        startComputed(value);
+        return;
+      }
+      setDigitCount(value);
+    },
+    [startComputed, setDigitCount],
   );
 
   return (
@@ -181,7 +200,7 @@ export function SettingsScreen() {
             <ThemedPicker
               testID="picker-digits"
               selectedValue={digitCount}
-              onValueChange={setDigitCount}
+              onValueChange={(v) => onDigitCountChange(Number(v))}
             >
               {COMPUTED_DIGIT_OPTIONS.map((option) => (
                 <Picker.Item

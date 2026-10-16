@@ -236,6 +236,16 @@ describe('SettingsScreen', () => {
     root.findByProps({ testID: 'switch-precomputed' }).props.onValueChange(true);
     expect(useCalculationStore.getState().isCalculating).toBe(false);
   });
+
+  test('changing digit count in calculated mode restarts computation', () => {
+    useSettingsStore.setState({ usePrecomputed: false, digitCount: 1000 });
+    const root = render(<SettingsScreen />).root;
+    root.findByProps({ testID: 'picker-digits' }).props.onValueChange(50000);
+    expect(mockCancelBackgroundCalculation).toHaveBeenCalled();
+    expect(mockStartBackgroundCalculation).toHaveBeenCalledTimes(1);
+    expect(mockStartBackgroundCalculation.mock.calls[0][0]).toBe(50000);
+    expect(useCalculationStore.getState().targetDigits).toBe(50000);
+  });
 });
 
 describe('PlayerScreen calculation banner', () => {
