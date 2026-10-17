@@ -76,29 +76,13 @@ function StripKey({
 }
 
 function Scrubber({ value, max }: { value: number; max: number }) {
-  const trackRef = useRef<View>(null);
+  const trackWidth = useRef(0);
 
   const seekFromTouch = useCallback(
-    (x: number) => {
-      const track = trackRef.current as unknown as {
-        measure: (
-          cb: (
-            x: number,
-            y: number,
-            width: number,
-            height: number,
-            pageX: number,
-            pageY: number,
-          ) => void,
-        ) => void;
-      } | null;
-      if (!track || typeof track.measure !== 'function') {
-        return;
-      }
-      track.measure((_x, _y, width, _h, pageX) => {
-        const ratio = Math.max(0, Math.min(1, (x - pageX) / Math.max(1, width)));
-        seekToDigit(Math.round(ratio * Math.max(0, max - 1)));
-      });
+    (locationX: number) => {
+      const width = Math.max(1, trackWidth.current);
+      const ratio = Math.max(0, Math.min(1, locationX / width));
+      seekToDigit(Math.round(ratio * Math.max(0, max - 1)));
     },
     [max],
   );
@@ -112,15 +96,23 @@ function Scrubber({ value, max }: { value: number; max: number }) {
         <Text style={styles.scrubLabel}>{max.toLocaleString()}</Text>
       </View>
       <View
-        ref={trackRef}
         testID="scrubber"
         style={styles.scrubTrack}
+        onLayout={(e) => {
+          trackWidth.current = e.nativeEvent.layout.width;
+        }}
         onStartShouldSetResponder={() => true}
-        onResponderGrant={(e) => seekFromTouch(e.nativeEvent.pageX)}
-        onResponderMove={(e) => seekFromTouch(e.nativeEvent.pageX)}
+        onResponderGrant={(e) => seekFromTouch(e.nativeEvent.locationX)}
+        onResponderMove={(e) => seekFromTouch(e.nativeEvent.locationX)}
       >
-        <View style={[styles.scrubFill, { width: `${ratio * 100}%` }]} />
-        <View style={[styles.scrubKnob, { left: `${ratio * 100}%` }]} />
+        <View
+          pointerEvents="none"
+          style={[styles.scrubFill, { width: `${ratio * 100}%` }]}
+        />
+        <View
+          pointerEvents="none"
+          style={[styles.scrubKnob, { left: `${ratio * 100}%` }]}
+        />
       </View>
     </View>
   );
