@@ -37,13 +37,12 @@ export class SoundBank {
   }
 
   /**
-   * Preload the 12 WAVs for an instrument. No-op if it's already loaded.
-   * Loading is lazy per instrument switch, keeping memory flat — only one
-   * instrument's samples are resident at a time.
+   * Load an instrument's 12 WAVs. No-op if it's already loaded.
    *
-   * The switch is atomic: the new instrument's players are fully created
-   * before the old ones are released, so a failed load leaves the previous
-   * instrument playable instead of silencing the app.
+   * Players are created once and reused across switches via replace(): each
+   * AudioPlayer owns a Media3 MediaSession, and creating a second batch of
+   * sessions on Android throws (ISession.getController NPE). Re-pointing the
+   * existing players avoids the churn entirely and makes switches faster.
    */
   async loadInstrument(instrument: Instrument): Promise<void> {
     if (this.loadedInstrument?.id === instrument.id && this.players.size > 0) {
@@ -64,29 +63,34 @@ export class SoundBank {
       interruptionMode: 'duckOthers',
     });
 
-    const entries = await Promise.all(
-      NOTE_NAMES.map(async (name): Promise<readonly [NoteName, AudioPlayer]> => {
+    const uris = await Promise.all(
+      NOTE_NAMES.map(async (name): Promise<readonly [NoteName, string]> => {
         const asset = Asset.fromModule(manifest[name]);
         await asset.downloadAsync();
         const uri = asset.localUri ?? asset.uri;
         if (!uri) {
           throw new Error(`asset has no uri for ${instrument.directory}/${name}`);
         }
-        const player = createAudioPlayer({ uri });
-        return [name, player] as const;
+        return [name, uri] as const;
       }),
     );
 
-    // A newer loadInstrument call superseded this one; drop our players.
+    // A newer loadInstrument call superseded this one; nothing to clean up
+    // (no players were created yet).
     if (token !== this.loadToken) {
-      this.releasePlayers(entries.map(([, player]) => player));
       return;
     }
 
-    // Swap is atomic: release the old bank only after the new one is ready.
-    this.performUnload();
-    for (const [name, player] of entries) {
-      this.players.set(name, player);
+    if (this.players.size === 0) {
+      // First load: create one player per note.
+      for (const [name, uri] of uris) {
+        this.players.set(name, createAudioPlayer({ uri }));
+      }
+    } else {
+      // Switch: re-point the existing players at the new WAVs.
+      for (const [name, uri] of uris) {
+        this.players.get(name)?.replace({ uri });
+      }
     }
     this.loadedInstrument = instrument;
   }

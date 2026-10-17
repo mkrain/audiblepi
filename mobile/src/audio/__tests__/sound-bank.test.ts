@@ -41,6 +41,7 @@ interface FakePlayer {
   play: jest.Mock;
   seekTo: jest.Mock;
   remove: jest.Mock;
+  replace: jest.Mock;
 }
 
 function makeFakePlayer(): FakePlayer {
@@ -48,6 +49,7 @@ function makeFakePlayer(): FakePlayer {
     play: jest.fn(),
     seekTo: jest.fn().mockResolvedValue(undefined),
     remove: jest.fn(),
+    replace: jest.fn(),
   };
 }
 
@@ -109,23 +111,27 @@ describe('SoundBank', () => {
     expect(createPlayer).not.toHaveBeenCalled();
   });
 
-  test('switching instrument removes the old bank and loads the new one', async () => {
+  test('switching instrument reuses players via replace()', async () => {
     const bank = new SoundBank();
     await bank.loadInstrument(piano);
     const pianoPlayers = [...created];
 
     await bank.loadInstrument(guitar);
 
-    expect(pianoPlayers.every((p) => p.remove.mock.calls.length === 1)).toBe(true);
-    expect(createPlayer).toHaveBeenCalledTimes(24);
+    // No new players created; old ones are re-pointed, not removed.
+    expect(createPlayer).toHaveBeenCalledTimes(12);
+    expect(pianoPlayers.every((p) => p.remove.mock.calls.length === 0)).toBe(true);
+    expect(pianoPlayers.every((p) => p.replace.mock.calls.length === 1)).toBe(true);
+    // 'C' (index 0) now points at guitar's asset (base 200).
+    expect(pianoPlayers[0].replace).toHaveBeenCalledWith({ uri: 'file:///bundled/200.wav' });
     expect(bank.currentInstrument?.directory).toBe('Guitar');
     expect(bank.isLoaded).toBe(true);
 
     bank.playNote('G');
     await flushPromises();
-    // 'G' is index 7 of the 12 guitar players (created[12..23]).
-    expect(created[12 + 7].seekTo).toHaveBeenCalledWith(0);
-    expect(created[12 + 7].play).toHaveBeenCalledTimes(1);
+    // 'G' is index 7 of the reused 12 players.
+    expect(created[7].seekTo).toHaveBeenCalledWith(0);
+    expect(created[7].play).toHaveBeenCalledTimes(1);
   });
 
   test('unload releases all players', async () => {
