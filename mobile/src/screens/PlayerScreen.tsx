@@ -247,25 +247,6 @@ export function PlayerScreen() {
         </View>
       </View>
 
-      {/* Background-calculation banner */}
-      {isCalculating && (
-        <View style={styles.calcBanner}>
-          <Text testID="calc-progress" style={styles.calcProgress}>
-            {progressDigit < 0
-              ? `Computing… term ${(-progressDigit).toLocaleString()}`
-              : `Digit ${progressDigit.toLocaleString()} of ${targetDigits.toLocaleString()}`}
-          </Text>
-          <TouchableOpacity
-            testID="calc-cancel"
-            style={styles.calcCancel}
-            onPress={onCancelCalculation}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="stop-circle" size={28} color={colors.danger} />
-          </TouchableOpacity>
-        </View>
-      )}
-
       {/* Transport */}
       <View style={styles.transportRow}>
         <TouchableOpacity
@@ -297,6 +278,25 @@ export function PlayerScreen() {
           <Ionicons name="play-skip-forward" size={32} color={colors.text} />
         </TouchableOpacity>
       </View>
+
+      {/* Background-calculation banner (below transport so it never shifts the player UI) */}
+      {isCalculating && (
+        <View style={styles.calcBanner}>
+          <Text testID="calc-progress" style={styles.calcProgress}>
+            {progressDigit < 0
+              ? `Computing… term ${(-progressDigit).toLocaleString()}`
+              : `Digit ${progressDigit.toLocaleString()} of ${targetDigits.toLocaleString()}`}
+          </Text>
+          <TouchableOpacity
+            testID="calc-cancel"
+            style={styles.calcCancel}
+            onPress={onCancelCalculation}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="stop-circle" size={28} color={colors.danger} />
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
