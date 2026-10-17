@@ -413,6 +413,9 @@ const styles = StyleSheet.create({
   scrubTrack: {
     height: 44,
     justifyContent: 'center',
+    // Keep the touch target clear of Android's edge back-gesture zones
+    // (a drag starting near the screen edge would otherwise minimize the app).
+    marginHorizontal: spacing.md,
   },
   scrubFill: {
     position: 'absolute',
