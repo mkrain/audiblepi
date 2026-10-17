@@ -1,4 +1,4 @@
-package com.audiblepi
+package com.mkrain.audiblepi
 
 import android.app.Application
 import android.content.res.Configuration

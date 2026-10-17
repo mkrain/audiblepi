@@ -1,4 +1,4 @@
-package com.audiblepi
+package com.mkrain.audiblepi
 
 import android.os.Bundle
 import com.facebook.react.ReactActivity
