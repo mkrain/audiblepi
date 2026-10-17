@@ -88,8 +88,15 @@ export class SoundBank {
       }
     } else {
       // Switch: re-point the existing players at the new WAVs.
+      // Pause first: ExoPlayer keeps playWhenReady=true after a clip ends,
+      // so replace() would otherwise auto-play every note (a "scale").
       for (const [name, uri] of uris) {
-        this.players.get(name)?.replace({ uri });
+        const player = this.players.get(name);
+        if (!player) {
+          continue;
+        }
+        player.pause();
+        player.replace({ uri });
       }
     }
     this.loadedInstrument = instrument;

@@ -42,6 +42,7 @@ interface FakePlayer {
   seekTo: jest.Mock;
   remove: jest.Mock;
   replace: jest.Mock;
+  pause: jest.Mock;
 }
 
 function makeFakePlayer(): FakePlayer {
@@ -50,6 +51,7 @@ function makeFakePlayer(): FakePlayer {
     seekTo: jest.fn().mockResolvedValue(undefined),
     remove: jest.fn(),
     replace: jest.fn(),
+    pause: jest.fn(),
   };
 }
 
@@ -122,6 +124,9 @@ describe('SoundBank', () => {
     expect(createPlayer).toHaveBeenCalledTimes(12);
     expect(pianoPlayers.every((p) => p.remove.mock.calls.length === 0)).toBe(true);
     expect(pianoPlayers.every((p) => p.replace.mock.calls.length === 1)).toBe(true);
+    // Players are paused before replace so the switch itself is silent
+    // (ExoPlayer would otherwise auto-play on prepare).
+    expect(pianoPlayers.every((p) => p.pause.mock.calls.length === 1)).toBe(true);
     // 'C' (index 0) now points at guitar's asset (base 200).
     expect(pianoPlayers[0].replace).toHaveBeenCalledWith({ uri: 'file:///bundled/200.wav' });
     expect(bank.currentInstrument?.directory).toBe('Guitar');
