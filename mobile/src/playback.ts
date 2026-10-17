@@ -460,6 +460,7 @@ export function startBackgroundCalculation(
     // Swap to starter digits immediately — user can play now.
     s.cursor.swapSource(starter, starter.length - 1);
     usePlayerStore.getState().reset();
+    let resumed = false;
     if (wasPlaying) {
       // Keep playing through the source switch with the computed digits.
       const settings = useSettingsStore.getState();
@@ -467,6 +468,7 @@ export function startBackgroundCalculation(
       syncIndex();
       await s.controller.start(s.cursor, currentInstrument(), settings.tempoMs);
       usePlayerStore.getState().setPlaying(true);
+      resumed = true;
     }
 
     // Phase 2: Full computation in background (skip if starter was the full request).
@@ -488,7 +490,13 @@ export function startBackgroundCalculation(
     const pos = s.cursor.index;
     s.cursor.swapSource(full, full.length - 1);
     s.cursor.seek(Math.min(pos, full.length - 1));
-    usePlayerStore.getState().reset();
+    if (resumed) {
+      // Playback continued through the swap — keep the button in sync
+      // instead of resetting it to "not playing".
+      syncIndex();
+    } else {
+      usePlayerStore.getState().reset();
+    }
     onComplete?.(true);
   })().catch(() => undefined);
 }
