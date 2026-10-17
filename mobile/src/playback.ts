@@ -460,6 +460,14 @@ export function startBackgroundCalculation(
     // Swap to starter digits immediately — user can play now.
     s.cursor.swapSource(starter, starter.length - 1);
     usePlayerStore.getState().reset();
+    if (wasPlaying) {
+      // Keep playing through the source switch with the computed digits.
+      const settings = useSettingsStore.getState();
+      s.cursor.seek(0);
+      syncIndex();
+      await s.controller.start(s.cursor, currentInstrument(), settings.tempoMs);
+      usePlayerStore.getState().setPlaying(true);
+    }
 
     // Phase 2: Full computation in background (skip if starter was the full request).
     if (starterRounds >= rounds) {
