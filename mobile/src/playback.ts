@@ -208,7 +208,9 @@ export async function initApp(): Promise<void> {
     if (state.instrumentId !== prev.instrumentId) {
       controller
         .setInstrument(INSTRUMENTS[state.instrumentId] ?? INSTRUMENTS[0])
-        .catch(() => undefined);
+        .catch((error) => {
+          console.warn('[playback] instrument switch failed', error);
+        });
     }
     if (state.tempoMs !== prev.tempoMs && controller.isPlaying) {
       controller.setTempoMs(state.tempoMs);

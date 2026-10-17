@@ -40,14 +40,16 @@ export class SoundBank {
    * Preload the 12 WAVs for an instrument. No-op if it's already loaded.
    * Loading is lazy per instrument switch, keeping memory flat — only one
    * instrument's samples are resident at a time.
+   *
+   * The switch is atomic: the new instrument's players are fully created
+   * before the old ones are released, so a failed load leaves the previous
+   * instrument playable instead of silencing the app.
    */
   async loadInstrument(instrument: Instrument): Promise<void> {
     if (this.loadedInstrument?.id === instrument.id && this.players.size > 0) {
       return;
     }
     const token = ++this.loadToken;
-
-    this.performUnload();
 
     const manifest = INSTRUMENT_ASSETS[instrument.directory];
     if (!manifest) {
@@ -77,16 +79,12 @@ export class SoundBank {
 
     // A newer loadInstrument call superseded this one; drop our players.
     if (token !== this.loadToken) {
-      for (const [, player] of entries) {
-        try {
-          player.remove();
-        } catch {
-          // Best-effort; a failed release must never break the scheduler.
-        }
-      }
+      this.releasePlayers(entries.map(([, player]) => player));
       return;
     }
 
+    // Swap is atomic: release the old bank only after the new one is ready.
+    this.performUnload();
     for (const [name, player] of entries) {
       this.players.set(name, player);
     }
@@ -121,6 +119,10 @@ export class SoundBank {
     this.loadedInstrument = null;
     const players = [...this.players.values()];
     this.players.clear();
+    this.releasePlayers(players);
+  }
+
+  private releasePlayers(players: AudioPlayer[]): void {
     for (const player of players) {
       try {
         player.remove();
