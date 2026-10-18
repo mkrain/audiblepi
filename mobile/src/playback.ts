@@ -503,7 +503,6 @@ export function startBackgroundCalculation(
     const pos = s.cursor.index;
     s.cursor.swapSource(full, full.length - 1);
     s.cursor.seek(Math.min(pos, full.length - 1));
-    console.log('[playback] phase 2 done, resumed=', resumed, 'isPlaying=', usePlayerStore.getState().isPlaying);
     if (resumed) {
       // Playback continued through the swap — keep the button in sync
       // instead of resetting it to "not playing".
@@ -530,7 +529,10 @@ export function cancelBackgroundCalculation(): void {
   const partial = s.piService.extractPartialDigits('base12');
   if (partial && partial.length > 10) {
     s.cursor.swapSource(partial, partial.length - 1);
-    usePlayerStore.getState().reset();
+    // swapSource seeks to 0; sync the UI index. Deliberately leaves the
+    // playing state alone — clearing it here without pausing the controller
+    // desyncs the play button from the actual audio.
+    syncIndex();
   }
 }
 
