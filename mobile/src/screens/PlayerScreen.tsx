@@ -191,10 +191,17 @@ export function PlayerScreen() {
         <Text testID="current-note-name" style={styles.heroNote}>
           {notes.current ?? '–'}
         </Text>
-        <Text style={styles.heroDigit}>
-          digit {(digitIndex + 1).toLocaleString()}{' '}
-          <Text style={styles.heroArrow}>→</Text> {notes.current ?? '–'}
-        </Text>
+        <View style={styles.heroDigitWrap}>
+          <Text style={styles.heroDigit}>
+            digit {(digitIndex + 1).toLocaleString()}
+          </Text>
+          <Ionicons
+            name="arrow-forward"
+            size={fontSizes.body}
+            color={colors.muted}
+          />
+          <Text style={styles.heroDigit}>{notes.current ?? '–'}</Text>
+        </View>
       </View>
 
       {/* 5-note tappable strip */}
@@ -343,7 +350,7 @@ const styles = StyleSheet.create({
   },
   hero: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.md,
     paddingVertical: spacing.sm,
@@ -362,10 +369,10 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: fontSizes.body,
   },
-  heroArrow: {
-    // The → glyph sits low in its em box; nudge it up to the text's
-    // vertical center.
-    transform: [{ translateY: -5 }],
+  heroDigitWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
   },
   strip: {
     flexDirection: 'row',
