@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { StaffView } from '../components/StaffView';
 
 import {
   cancelBackgroundCalculation,
@@ -301,6 +302,9 @@ export function PlayerScreen() {
           <Ionicons name="play-skip-forward" size={32} color={colors.text} />
         </TouchableOpacity>
       </View>
+
+      {/* Live score: tappable, swipe-to-scrub staff */}
+      <StaffView />
 
       {/* Background-calculation banner (below transport so it never shifts the player UI) */}
       {isCalculating && (

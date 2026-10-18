@@ -345,6 +345,52 @@ export function tapNoteAt(offset: number): void {
   }
 }
 
+/**
+ * Notes in a window around the cursor for the staff view.
+ * Offsets run from -before to +after; 0 is the current note.
+ * Out-of-range slots have note: null.
+ */
+export function getNotesWindow(before: number, after: number): StripNote[] {
+  const s = services;
+  if (!s) {
+    return [];
+  }
+  const result: StripNote[] = [];
+  for (let offset = -before; offset <= after; offset++) {
+    const digitIndex = s.cursor.index + offset;
+    const digitChar = s.cursor.peekDigitAt(digitIndex) || null;
+    result.push({
+      offset,
+      digitIndex,
+      note: noteForDigitChar(digitChar ?? ''),
+      digit: digitChar,
+    });
+  }
+  return result;
+}
+
+/**
+ * Swipe-scrub: move the cursor by `steps` digits, sounding each note passed.
+ * Positive = forward. Stops at the digit source bounds.
+ */
+export function scrubBySteps(steps: number): void {
+  const s = requireServices();
+  const n = Math.trunc(steps);
+  if (n === 0) {
+    return;
+  }
+  const count = Math.abs(n);
+  for (let i = 0; i < count; i++) {
+    const moved =
+      n > 0 ? s.cursor.moveNext() : s.cursor.movePrevious();
+    if (!moved) {
+      break;
+    }
+    s.controller.tapDigit(s.cursor.current);
+  }
+  syncIndex();
+}
+
 /** Seek the cursor to an absolute digit index (for the scrubber). */
 export function seekToDigit(index: number): void {
   const s = requireServices();
