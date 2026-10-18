@@ -6,8 +6,8 @@ import { colors, fontSizes, spacing } from '../ui/theme';
 import type { NoteName } from '../lib/notes';
 
 /** Notes shown behind/ahead of the playhead. */
-const BEFORE = 3;
-const AFTER = 10;
+const BEFORE_FALLBACK = 3;
+const AFTER_FALLBACK = 10;
 /** Horizontal pixels per digit. */
 const SPACING = 30;
 /** Tap vs swipe threshold in pixels. */
@@ -57,7 +57,6 @@ const STEM_H = 30;
 export function StaffView() {
   // Re-render whenever the cursor moves (playback, skip, scrub, tap).
   usePlayerStore((s) => s.digitIndex);
-  const notes = getNotesWindow(BEFORE, AFTER);
 
   // Briefly flash a tapped note so the press has a visual cue.
   const [pressedDigitIndex, setPressedDigitIndex] = useState<number | null>(
@@ -91,6 +90,18 @@ export function StaffView() {
   // button and the current strip key above.
   const [staffWidth, setStaffWidth] = useState(0);
   const playheadX = staffWidth / 2;
+
+  // Size the note window to fill the staff edge-to-edge (plus one extra note
+  // for the fade), so notes travel all the way off both sides.
+  const before =
+    staffWidth > 0
+      ? Math.ceil(playheadX / SPACING) + 1
+      : BEFORE_FALLBACK;
+  const after =
+    staffWidth > 0
+      ? Math.ceil((staffWidth - playheadX) / SPACING) + 1
+      : AFTER_FALLBACK;
+  const notes = getNotesWindow(before, after);
 
   return (
     <View style={styles.wrap}>
@@ -134,7 +145,7 @@ export function StaffView() {
             const offset = Math.round(
               (e.nativeEvent.locationX - playheadX) / SPACING,
             );
-            const clamped = Math.max(-BEFORE, Math.min(AFTER, offset));
+            const clamped = Math.max(-before, Math.min(after, offset));
             const tapped = notes.find((n) => n.offset === clamped);
             if (tapped?.note) {
               tapNoteAt(clamped);
