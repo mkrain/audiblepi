@@ -128,11 +128,11 @@ describe('PlayerScreen', () => {
     });
     mockGetCurrentDigit.mockReturnValue('1');
     mockGetNoteStrip.mockReturnValue([
-      { offset: -2, digitIndex: 39, note: null, digit: null },
-      { offset: -1, digitIndex: 40, note: 'C', digit: '0' },
-      { offset: 0, digitIndex: 41, note: 'C#', digit: '1' },
-      { offset: 1, digitIndex: 42, note: 'D', digit: '2' },
-      { offset: 2, digitIndex: 43, note: 'D#', digit: '3' },
+      { offset: -2, digitIndex: 39, note: null, digit: null, base10Digit: null },
+      { offset: -1, digitIndex: 40, note: 'C', digit: '0', base10Digit: '1' },
+      { offset: 0, digitIndex: 41, note: 'C#', digit: '1', base10Digit: '4' },
+      { offset: 1, digitIndex: 42, note: 'D', digit: '2', base10Digit: '1' },
+      { offset: 2, digitIndex: 43, note: 'D#', digit: '3', base10Digit: '5' },
     ]);
     mockGetUpcomingNotes.mockReturnValue([
       { offset: 1, digitIndex: 42, note: 'D', digit: '2' },

@@ -238,7 +238,9 @@ export function PlayerScreen() {
             testID={testIdForOffset(s.offset)}
             label={s.note}
             digitLabel={
-              s.note ? (s.digitIndex + 1).toLocaleString() : '·'
+              s.note
+                ? (s.base10Digit ?? (s.digitIndex + 1).toLocaleString())
+                : '·'
             }
             highlighted={s.offset === 0}
             disabled={!s.note}

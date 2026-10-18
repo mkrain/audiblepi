@@ -30,6 +30,8 @@ interface Services {
   soundBank: SoundBank;
   cursor: Cursor;
   digits: string;
+  /** Base-10 digits of pi, index-aligned with `digits`; null in calculated mode. */
+  digitsBase10: string | null;
 }
 
 /**
@@ -186,6 +188,7 @@ export async function initApp(): Promise<void> {
   }
 
   const digits = await readDigitFile(true);
+  const digitsBase10 = await readDigitFile(false);
   const piService = new PiService(digits);
   const soundBank = new SoundBank();
   const cursor = new Cursor(
@@ -198,7 +201,7 @@ export async function initApp(): Promise<void> {
   });
   await controller.setInstrument(currentInstrument());
 
-  services = { piService, controller, soundBank, cursor, digits };
+  services = { piService, controller, soundBank, cursor, digits, digitsBase10 };
 
   useSettingsStore.subscribe((state, prev) => {
     const s = services;
@@ -288,6 +291,17 @@ export interface StripNote {
   note: NoteName | null;
   /** Base-12 digit character ('0'-'9', 'A', 'B') at this position; null if out of range. */
   digit: string | null;
+  /** Base-10 digit of pi at this index; null if out of range or unavailable (calculated mode). */
+  base10Digit: string | null;
+}
+
+/** Base-10 digit at an absolute index, or null if unavailable. */
+function base10DigitAt(index: number): string | null {
+  const s = services;
+  if (!s?.digitsBase10 || index < 0 || index >= s.digitsBase10.length) {
+    return null;
+  }
+  return s.digitsBase10[index];
 }
 
 /**
@@ -308,6 +322,7 @@ export function getNoteStrip(): StripNote[] {
       digitIndex,
       note: noteForDigitChar(digitChar ?? ''),
       digit: digitChar,
+      base10Digit: base10DigitAt(digitIndex),
     });
   }
   return result;
@@ -331,6 +346,7 @@ export function getUpcomingNotes(count: number): StripNote[] {
       digitIndex,
       note: noteForDigitChar(digitChar ?? ''),
       digit: digitChar,
+      base10Digit: base10DigitAt(digitIndex),
     });
   }
   return result;
@@ -364,6 +380,7 @@ export function getNotesWindow(before: number, after: number): StripNote[] {
       digitIndex,
       note: noteForDigitChar(digitChar ?? ''),
       digit: digitChar,
+      base10Digit: base10DigitAt(digitIndex),
     });
   }
   return result;
