@@ -503,6 +503,7 @@ export function startBackgroundCalculation(
     const pos = s.cursor.index;
     s.cursor.swapSource(full, full.length - 1);
     s.cursor.seek(Math.min(pos, full.length - 1));
+    console.log('[playback] phase 2 done, resumed=', resumed, 'isPlaying=', usePlayerStore.getState().isPlaying);
     if (resumed) {
       // Playback continued through the swap — keep the button in sync
       // instead of resetting it to "not playing".
