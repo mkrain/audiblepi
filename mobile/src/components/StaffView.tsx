@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { getNotesWindow, scrubBySteps, tapNoteAt } from '../playback';
 import { usePlayerStore } from '../state/player';
@@ -59,6 +59,27 @@ export function StaffView() {
   usePlayerStore((s) => s.digitIndex);
   const notes = getNotesWindow(BEFORE, AFTER);
 
+  // Briefly flash a tapped note so the press has a visual cue.
+  const [pressedDigitIndex, setPressedDigitIndex] = useState<number | null>(
+    null,
+  );
+  const pressTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (pressTimeout.current) {
+        clearTimeout(pressTimeout.current);
+      }
+    },
+    [],
+  );
+  const flashNote = (digitIndex: number) => {
+    if (pressTimeout.current) {
+      clearTimeout(pressTimeout.current);
+    }
+    setPressedDigitIndex(digitIndex);
+    pressTimeout.current = setTimeout(() => setPressedDigitIndex(null), 350);
+  };
+
   const gesture = useRef({
     startX: 0,
     lastX: 0,
@@ -108,7 +129,11 @@ export function StaffView() {
               (e.nativeEvent.locationX - PLAYHEAD_X) / SPACING,
             );
             const clamped = Math.max(-BEFORE, Math.min(AFTER, offset));
-            tapNoteAt(clamped);
+            const tapped = notes.find((n) => n.offset === clamped);
+            if (tapped?.note) {
+              tapNoteAt(clamped);
+              flashNote(tapped.digitIndex);
+            }
           }
           g.accumulatedDx = 0;
           g.scrubbing = false;
@@ -132,6 +157,7 @@ export function StaffView() {
           const x = PLAYHEAD_X + n.offset * SPACING;
           const y = NOTE_Y[n.note];
           const isCurrent = n.offset === 0;
+          const isPressed = n.digitIndex === pressedDigitIndex;
           const isSharp = SHARPS[n.note];
           // Stems up for C–A, down for B (proper notation).
           const stemUp = n.note !== 'B';
@@ -149,7 +175,7 @@ export function StaffView() {
                 <Text
                   style={[
                     styles.sharp,
-                    isCurrent && styles.sharpCurrent,
+                    (isCurrent || isPressed) && styles.sharpCurrent,
                     { left: x - 17, top: y - 7 },
                   ]}
                 >
@@ -160,13 +186,14 @@ export function StaffView() {
                 style={[
                   styles.head,
                   isCurrent && styles.headCurrent,
+                  isPressed && styles.headPressed,
                   { left: x - HEAD_W / 2, top: y - HEAD_H / 2 },
                 ]}
               />
               <View
                 style={[
                   styles.stem,
-                  isCurrent && styles.stemCurrent,
+                  (isCurrent || isPressed) && styles.stemCurrent,
                   stemUp
                     ? {
                         left: x + HEAD_W / 2 - STEM_W,
@@ -253,6 +280,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 6,
     elevation: 4,
+  },
+  headPressed: {
+    backgroundColor: '#4dc3ff',
+    transform: [{ rotate: '-18deg' }, { scale: 1.4 }],
+    shadowColor: '#4dc3ff',
+    shadowOpacity: 0.9,
+    shadowRadius: 8,
+    elevation: 6,
   },
   stem: {
     position: 'absolute',
