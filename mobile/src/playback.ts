@@ -422,6 +422,7 @@ export function startBackgroundCalculation(
   const s = requireServices();
   calcCancelled = false;
   const wasPlaying = usePlayerStore.getState().isPlaying;
+  console.log('[playback] startBackgroundCalculation wasPlaying=', wasPlaying);
   if (wasPlaying) {
     s.controller.pause();
     usePlayerStore.getState().setPlaying(false);
@@ -461,12 +462,18 @@ export function startBackgroundCalculation(
     s.cursor.swapSource(starter, starter.length - 1);
     usePlayerStore.getState().reset();
     let resumed = false;
+    console.log('[playback] phase 1 done, wasPlaying=', wasPlaying, 'calcCancelled=', calcCancelled);
     if (wasPlaying) {
       // Keep playing through the source switch with the computed digits.
       const settings = useSettingsStore.getState();
       s.cursor.seek(0);
       syncIndex();
-      await s.controller.start(s.cursor, currentInstrument(), settings.tempoMs);
+      try {
+        await s.controller.start(s.cursor, currentInstrument(), settings.tempoMs);
+        console.log('[playback] controller.start ok');
+      } catch (e) {
+        console.log('[playback] controller.start threw', e);
+      }
       usePlayerStore.getState().setPlaying(true);
       resumed = true;
     }
