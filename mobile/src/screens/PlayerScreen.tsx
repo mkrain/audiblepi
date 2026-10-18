@@ -386,10 +386,10 @@ const styles = StyleSheet.create({
     color: colors.accent,
     fontSize: 56,
     fontWeight: '200',
-    // Fixed width + left alignment keeps the layout stable across digit
-    // values — same anti-jitter treatment the note hero had.
+    // Fixed width keeps the layout stable across digit values; right-aligned
+    // so the digit sits as close to the arrow as the note does (symmetric).
     minWidth: 96,
-    textAlign: 'left',
+    textAlign: 'right',
   },
   heroNoteBig: {
     color: colors.text,
