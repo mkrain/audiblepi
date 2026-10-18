@@ -14,30 +14,28 @@ import { colors, fontSizes, spacing } from '../ui/theme';
 const ABOUT = {
   title: 'AudiblePi',
   author: 'Jeremiah Medina',
-  description: 'Hear the digits of pi as music — each digit becomes a note.',
+  description: 'Hear the digits of pi as music.',
   additionalNotes:
-    'Digits play from the embedded 1,000,000-digit file, or calculate them live with the Machin formula.',
+    'Plays from the embedded 1,000,000-digit file, or calculates digits live with the Machin formula.',
   version: '2.0.0',
 };
 
 const SECTIONS: { title: string; body: string }[] = [
   {
     title: 'The Player',
-    body: `The main screen, top to bottom:
+    body: `The header shows where you are ("19 of 955,187"), the BASE 12 badge, and the current instrument. Tap the instrument to switch sounds.
 
-Header — your position in pi ("19 of 955,187"), the BASE 12 badge, and the current instrument. Tap the instrument to cycle through sounds.
+The big digit is the base-12 digit at the current position, with the note it plays. Digits go 0-9, A, B.
 
-Digit — the big base-12 digit at the current position, with the note it plays (e.g. "A → A#"). Digits run 0–9, A, B.
+The strip has the five notes around the current one. Tap a key to hear that note. Tap more than one at a time to play chords. The small number under each key is the base-10 pi digit at that spot.
 
-Note strip — the five notes around the current one. Tap any key to hear it without moving; press several at once for chords. The number under each key is the familiar base-10 pi digit at that position.
+Drag the scrubber to jump to any digit. The number above the knob is the exact position.
 
-Scrubber — drag to jump anywhere in pi. The pill above the knob shows the exact digit number.
+Up Next shows the coming digits. Each card has the base-12 digit and its note. The current digit is highlighted.
 
-Up Next — the coming digits as periodic-table cards: base-12 digit on top, note below. The current one is highlighted.
+The transport buttons step forward or back by the skip amount, or play/pause.
 
-Transport — step backward/forward by the skip amount, or play/pause.
-
-Score — a live sheet-music staff. Notes sit at their true pitch and scroll past the playhead as they play. Tap any note to hear it, or swipe horizontally to scrub through the digits, hearing each one.`,
+The score is a sheet music staff that scrolls as the music plays. Tap a note to hear it. Swipe left or right to move through the digits.`,
   },
   {
     title: 'About Pi',
@@ -46,24 +44,25 @@ Score — a live sheet-music staff. Notes sit at their true pitch and scroll pas
 Information about the formula used:
 - http://en.wikipedia.org/wiki/John_Machin/
 
-Playing 12 notes
-To play the 12 notes of the chromatic scale (C, C#, D, D#, E, F, F#, G, G#, A, A#, B), pi is used in base 12 (duodecimal), where the digits are 0–9, A, B. Each digit maps directly to a note: 0 = C, 1 = C#, and so on up to B = B. The base-10 digit shown under each strip key is the same position in pi's familiar decimal expansion.`,
+Pi in base 12 uses digits 0-9, A, B. Each one maps to a note. 0 is C, 1 is C#, up through B which is B. The small numbers under the strip keys are the base-10 digits of pi at those positions.`,
   },
   {
     title: 'Tips',
-    body: `How it works
-- Press play and the notes play continuously until the end, unless Loop is on.
-- The previous/next buttons step by the skip amount without replaying intermediate notes.
-- Drag the scrubber (or swipe the staff) to jump to any digit.
-- Tap the instrument icon in the header to cycle through instruments.
+    body: `Press play to start. It plays to the end unless Loop is on.
 
-Settings
-- Instrument: pick the sound you want to hear.
-- Skip: how many digits the previous/next buttons jump.
-- Tempo: milliseconds between notes — try 125ms for furious mode!
-- Digits: how many digits to calculate (calculated mode only; precomputed mode uses the full embedded file).
-- Loop: when on, playback restarts at the beginning instead of stopping.
-- Precomputed: switch between the embedded digit file and the live Machin-formula calculator. Turning it off starts calculating in the background — sound begins as soon as the first digits are ready.`,
+The skip buttons jump forward or back by the skip amount.
+
+Drag the scrubber or swipe the staff to jump around.
+
+Tap the instrument icon to change sounds.
+
+Settings:
+Instrument: the sound that plays.
+Skip: how far the skip buttons jump.
+Tempo: time between notes in milliseconds. 125 is fast.
+Digits: how many digits to calculate. Only used in calculated mode.
+Loop: restart at the beginning instead of stopping.
+Precomputed: use the embedded file or calculate live. Turning it off starts the calculator in the background. You will hear sound as soon as digits are ready.`,
   },
 ];
 
