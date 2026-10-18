@@ -6,7 +6,7 @@
  * scrubber, an "up next" piano roll, and the transport row.
  */
 
-import { useCallback, useRef } from 'react';
+import { useCallback, useState } from 'react';
 import {
   Image,
   StyleSheet,
@@ -77,18 +77,27 @@ function StripKey({
 }
 
 function Scrubber({ value, max }: { value: number; max: number }) {
-  const trackWidth = useRef(0);
+  const [trackWidth, setTrackWidth] = useState(0);
 
   const seekFromTouch = useCallback(
     (locationX: number) => {
-      const width = Math.max(1, trackWidth.current);
+      const width = Math.max(1, trackWidth);
       const ratio = Math.max(0, Math.min(1, locationX / width));
       seekToDigit(Math.round(ratio * Math.max(0, max - 1)));
     },
-    [max],
+    [max, trackWidth],
   );
 
   const ratio = max > 1 ? value / (max - 1) : 0;
+  // Pixel positioning from the measured track width — precise at any digit
+  // count, unlike percentage strings which don't reliably re-resolve tiny
+  // ratio deltas (e.g. skipping 100 of 955,430 digits).
+  const fillWidth = Math.max(0, Math.min(trackWidth, ratio * trackWidth));
+  const knobSize = 26;
+  const knobLeft = Math.max(
+    0,
+    Math.min(trackWidth - knobSize, ratio * trackWidth - knobSize / 2),
+  );
 
   return (
     <View style={styles.scrubWrap}>
@@ -100,7 +109,7 @@ function Scrubber({ value, max }: { value: number; max: number }) {
         testID="scrubber"
         style={styles.scrubTrack}
         onLayout={(e) => {
-          trackWidth.current = e.nativeEvent.layout.width;
+          setTrackWidth(e.nativeEvent.layout.width);
         }}
         onStartShouldSetResponder={() => true}
         onResponderGrant={(e) => seekFromTouch(e.nativeEvent.locationX)}
@@ -108,11 +117,11 @@ function Scrubber({ value, max }: { value: number; max: number }) {
       >
         <View
           pointerEvents="none"
-          style={[styles.scrubFill, { width: `${ratio * 100}%` }]}
+          style={[styles.scrubFill, { width: fillWidth }]}
         />
         <View
           pointerEvents="none"
-          style={[styles.scrubKnob, { left: `${ratio * 100}%` }]}
+          style={[styles.scrubKnob, { left: knobLeft }]}
         />
       </View>
     </View>
@@ -442,7 +451,6 @@ const styles = StyleSheet.create({
     height: 26,
     borderRadius: 13,
     backgroundColor: colors.accent,
-    marginLeft: -13,
     borderWidth: 3,
     borderColor: colors.background,
   },
