@@ -295,15 +295,16 @@ describe('AboutScreen', () => {
   test('renders title, version and sections', () => {
     const root = render(<AboutScreen />).root;
     expect(root.findByProps({ testID: 'about-title' }).props.children).toBe(
-      'Audible.Pi',
+      'AudiblePi',
     );
     const texts = root
       .findAllByType(require('react-native').Text)
       .map((t) => t.props.children);
     const flat = texts.flat(Infinity).join('\n');
-    expect(flat).toContain('1.2.1.0');
-    expect(flat).toContain('History');
+    expect(flat).toContain('2.0.0');
+    expect(flat).toContain('The Player');
     expect(flat).toContain('About Pi');
     expect(flat).toContain('Tips');
+    expect(flat).not.toContain('History');
   });
 });

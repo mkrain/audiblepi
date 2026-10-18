@@ -1,9 +1,5 @@
 /**
- * About screen — port of the WP7 Panorama's third item (InfoViewModel),
- * with content transcribed from Content/About/Data.xml.
- *
- * The WP7 cross-promo "other apps" control was dropped per Jeremiah's
- * product call; this screen is the static about content only.
+ * About screen — app information, player guide, and tips.
  */
 
 import {
@@ -16,28 +12,32 @@ import {
 import { colors, fontSizes, spacing } from '../ui/theme';
 
 const ABOUT = {
-  title: 'Audible.Pi',
+  title: 'AudiblePi',
   author: 'Jeremiah Medina',
-  description: 'Hear the sounds of Pi with various instruments',
+  description: 'Hear the digits of pi as music — each digit becomes a note.',
   additionalNotes:
-    'Options for both calculating pi and playing it from the embedded file.',
-  version: '1.2.1.0',
+    'Digits play from the embedded 1,000,000-digit file, or calculate them live with the Machin formula.',
+  version: '2.0.0',
 };
 
 const SECTIONS: { title: string; body: string }[] = [
   {
-    title: 'History',
-    body: `1.2.1.0
-- Minor update to fix the app list control.
+    title: 'The Player',
+    body: `The main screen, top to bottom:
 
-1.2.0.0
-- This adds the ability to play up to nearly 1,000,000 digits of pi from the embedded file.
+Header — your position in pi ("19 of 955,187"), the BASE 12 badge, and the current instrument. Tap the instrument to cycle through sounds.
 
-1.1.0.0
-- Bug fixes.
+Digit — the big base-12 digit at the current position, with the note it plays (e.g. "A → A#"). Digits run 0–9, A, B.
 
-1.0.0.0
-- This is the initial public version.`,
+Note strip — the five notes around the current one. Tap any key to hear it without moving; press several at once for chords. The number under each key is the familiar base-10 pi digit at that position.
+
+Scrubber — drag to jump anywhere in pi. The pill above the knob shows the exact digit number.
+
+Up Next — the coming digits as periodic-table cards: base-12 digit on top, note below. The current one is highlighted.
+
+Transport — step backward/forward by the skip amount, or play/pause.
+
+Score — a live sheet-music staff. Notes sit at their true pitch and scroll past the playhead as they play. Tap any note to hear it, or swipe horizontally to scrub through the digits, hearing each one.`,
   },
   {
     title: 'About Pi',
@@ -46,26 +46,24 @@ const SECTIONS: { title: string; body: string }[] = [
 Information about the formula used:
 - http://en.wikipedia.org/wiki/John_Machin/
 
-Playing 12 Standard Notes
-In order to play the 12 standard notes (C, C#, D, D#, E, F, F#, G, G#, A, A#, B), the decimal equivalent of Pi must be converted into duodecimal or base 12. The application takes a shortcut as converting such a precise number with imprecise datatypes is difficult. Instead the application takes each grouping of 5 digits as they are calculated and converts those to base 12. What gets played are these "pseudo"-base 12 digits.`,
+Playing 12 notes
+To play the 12 notes of the chromatic scale (C, C#, D, D#, E, F, F#, G, G#, A, A#, B), pi is used in base 12 (duodecimal), where the digits are 0–9, A, B. Each digit maps directly to a note: 0 = C, 1 = C#, and so on up to B = B. The base-10 digit shown under each strip key is the same position in pi's familiar decimal expansion.`,
   },
   {
     title: 'Tips',
     body: `How it works
-- The big note shows the note for the current digit of pi; the strip below it plays the two notes before and after, and supports multi-touch chords.
-- Drag the position slider (or tap it) to jump to any digit.
-- Press play and the notes play continuously until the end, unless Loop Sound is on.
-- The previous/next buttons step by the skip amount.
-- Tap the instrument name in the header to cycle through instruments.
+- Press play and the notes play continuously until the end, unless Loop is on.
+- The previous/next buttons step by the skip amount without replaying intermediate notes.
+- Drag the scrubber (or swipe the staff) to jump to any digit.
+- Tap the instrument icon in the header to cycle through instruments.
 
-Use The Settings Menu
-The settings menu is your friend; you can customize much of the app there
+Settings
 - Instrument: pick the sound you want to hear.
-- Previous/Next Skip: when stepping manually or auto-playing, this many digits will be skipped.
-- Tempo: in milliseconds, the time between each sound — try 125ms for furious mode!
-- Number of Pi Digits: how many digits to calculate (calculated mode only; precomputed mode always uses the full 1,000,000 from the embedded file).
-- Loop Sound: when on, digits play continually, looping at the end.
-- Precomputed Digits: switch between the embedded 1,000,000-digit file and the Machin-formula calculator.`,
+- Skip: how many digits the previous/next buttons jump.
+- Tempo: milliseconds between notes — try 125ms for furious mode!
+- Digits: how many digits to calculate (calculated mode only; precomputed mode uses the full embedded file).
+- Loop: when on, playback restarts at the beginning instead of stopping.
+- Precomputed: switch between the embedded digit file and the live Machin-formula calculator. Turning it off starts calculating in the background — sound begins as soon as the first digits are ready.`,
   },
 ];
 
