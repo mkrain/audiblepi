@@ -93,10 +93,20 @@ function Scrubber({ value, max }: { value: number; max: number }) {
   // count, unlike percentage strings which don't reliably re-resolve tiny
   // ratio deltas (e.g. skipping 100 of 955,430 digits).
   const fillWidth = Math.max(0, Math.min(trackWidth, ratio * trackWidth));
-  const knobSize = 26;
+  const knobSize = 34;
   const knobLeft = Math.max(
     0,
     Math.min(trackWidth - knobSize, ratio * trackWidth - knobSize / 2),
+  );
+  // Position readout pill follows the knob; clamped so it never leaves the track.
+  const labelText = (value + 1).toLocaleString();
+  const labelWidth = 76;
+  const labelLeft = Math.max(
+    0,
+    Math.min(
+      trackWidth - labelWidth,
+      ratio * trackWidth - labelWidth / 2,
+    ),
   );
 
   return (
@@ -123,6 +133,12 @@ function Scrubber({ value, max }: { value: number; max: number }) {
           pointerEvents="none"
           style={[styles.scrubKnob, { left: knobLeft }]}
         />
+        <View
+          pointerEvents="none"
+          style={[styles.scrubLabelPill, { left: labelLeft }]}
+        >
+          <Text style={styles.scrubLabelPillText}>{labelText}</Text>
+        </View>
       </View>
     </View>
   );
@@ -432,7 +448,7 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.tiny,
   },
   scrubTrack: {
-    height: 44,
+    height: 72,
     justifyContent: 'center',
     // Keep the touch target clear of Android's edge back-gesture zones
     // (a drag starting near the screen edge would otherwise minimize the app).
@@ -441,18 +457,38 @@ const styles = StyleSheet.create({
   scrubFill: {
     position: 'absolute',
     left: 0,
+    top: 43,
     height: 8,
     backgroundColor: colors.accent,
     borderRadius: 4,
   },
   scrubKnob: {
     position: 'absolute',
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+    top: 30,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: colors.accent,
     borderWidth: 3,
     borderColor: colors.background,
+  },
+  scrubLabelPill: {
+    position: 'absolute',
+    top: 0,
+    width: 76,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.surfaceRaised,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scrubLabelPillText: {
+    color: colors.text,
+    fontSize: fontSizes.tiny,
+    fontWeight: '600',
+    fontVariant: ['tabular-nums'],
   },
   rollWrap: {
     width: '100%',
