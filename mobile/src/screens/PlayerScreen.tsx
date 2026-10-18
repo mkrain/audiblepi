@@ -225,7 +225,7 @@ export function PlayerScreen() {
           color={colors.muted}
           // The glyph carries left-side padding; nudge right so it sits
           // optically centered between the digit and the note.
-          style={{ transform: [{ translateX: 8 }] }}
+          style={{ transform: [{ translateX: 14 }] }}
         />
         <Text style={styles.heroNoteBig}>{notes.current ?? '–'}</Text>
       </View>
