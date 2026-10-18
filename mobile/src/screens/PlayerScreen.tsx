@@ -213,19 +213,17 @@ export function PlayerScreen() {
         </View>
       </View>
 
-      {/* Hero: current digit value + note mapping */}
+      {/* Hero: digit → note, both large with fixed widths (no jitter) */}
       <View style={styles.hero}>
         <Text testID="current-digit" style={styles.heroDigitBig}>
           {currentDigit ?? '–'}
         </Text>
-        <View style={styles.heroDigitWrap}>
-          <Ionicons
-            name="arrow-forward"
-            size={fontSizes.body}
-            color={colors.muted}
-          />
-          <Text style={styles.heroDigit}>{notes.current ?? '–'}</Text>
-        </View>
+        <Ionicons
+          name="arrow-forward"
+          size={40}
+          color={colors.muted}
+        />
+        <Text style={styles.heroNoteBig}>{notes.current ?? '–'}</Text>
       </View>
 
       {/* 5-note tappable strip */}
@@ -389,14 +387,13 @@ const styles = StyleSheet.create({
     minWidth: 96,
     textAlign: 'left',
   },
-  heroDigit: {
-    color: colors.muted,
-    fontSize: fontSizes.body,
-  },
-  heroDigitWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
+  heroNoteBig: {
+    color: colors.text,
+    fontSize: 56,
+    fontWeight: '200',
+    // Fixed width for 1-2 char note names ("F" vs "F#"), left-aligned.
+    minWidth: 120,
+    textAlign: 'left',
   },
   strip: {
     flexDirection: 'row',
