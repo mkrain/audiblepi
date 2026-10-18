@@ -192,7 +192,8 @@ export function PlayerScreen() {
           {notes.current ?? '–'}
         </Text>
         <Text style={styles.heroDigit}>
-          digit {(digitIndex + 1).toLocaleString()} → {notes.current ?? '–'}
+          digit {(digitIndex + 1).toLocaleString()}{' '}
+          <Text style={styles.heroArrow}>→</Text> {notes.current ?? '–'}
         </Text>
       </View>
 
@@ -360,6 +361,11 @@ const styles = StyleSheet.create({
   heroDigit: {
     color: colors.muted,
     fontSize: fontSizes.body,
+  },
+  heroArrow: {
+    // The → glyph sits low in its em box; nudge it up to the text's
+    // vertical center.
+    transform: [{ translateY: -2 }],
   },
   strip: {
     flexDirection: 'row',
