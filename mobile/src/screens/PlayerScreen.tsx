@@ -225,7 +225,7 @@ export function PlayerScreen() {
           color={colors.muted}
           // The glyph carries left-side padding; nudge right so it sits
           // optically centered between the digit and the note.
-          style={{ transform: [{ translateX: 14 }] }}
+          style={{ transform: [{ translateX: 6 }] }}
         />
         <Text style={styles.heroNoteBig}>{notes.current ?? '–'}</Text>
       </View>
@@ -391,7 +391,8 @@ const styles = StyleSheet.create({
     fontWeight: '200',
     // Fixed width keeps the layout stable across digit values; right-aligned
     // so the digit sits as close to the arrow as the note does (symmetric).
-    minWidth: 96,
+    // Matches heroNoteBig's width so the arrow sits optically centered.
+    minWidth: 120,
     textAlign: 'right',
   },
   heroNoteBig: {
