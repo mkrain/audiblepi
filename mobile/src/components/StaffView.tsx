@@ -12,6 +12,8 @@ const AFTER = 10;
 const SPACING = 30;
 /** Tap vs swipe threshold in pixels. */
 const TAP_SLOP = 10;
+/** Notes fade out over this many px at the staff's left/right edges. */
+const EDGE_FADE_PX = 56;
 
 /** Staff geometry: 5 lines, 12px apart, top line at STAFF_TOP. */
 const STAFF_TOP = 30;
@@ -163,10 +165,23 @@ export function StaffView() {
           const isCurrent = n.offset === 0;
           const isPressed = n.digitIndex === pressedDigitIndex;
           const isSharp = SHARPS[n.note];
+          // Fade notes out before they reach the staff's edges.
+          const edgeOpacity = Math.max(
+            0,
+            Math.min(
+              1,
+              x / EDGE_FADE_PX,
+              (staffWidth - x) / EDGE_FADE_PX,
+            ),
+          );
           // Stems up for C–A, down for B (proper notation).
           const stemUp = n.note !== 'B';
           return (
-            <View key={n.digitIndex} pointerEvents="none">
+            <View
+              key={n.digitIndex}
+              pointerEvents="none"
+              style={{ opacity: edgeOpacity }}
+            >
               {(n.note === 'C' || n.note === 'C#') && (
                 <View
                   style={[
