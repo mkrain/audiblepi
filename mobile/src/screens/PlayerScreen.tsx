@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   heroArrow: {
     // The → glyph sits low in its em box; nudge it up to the text's
     // vertical center.
-    transform: [{ translateY: -2 }],
+    transform: [{ translateY: -5 }],
   },
   strip: {
     flexDirection: 'row',
