@@ -341,7 +341,6 @@ export async function togglePlay(): Promise<void> {
   const s = requireServices();
   const player = usePlayerStore.getState();
   const settings = useSettingsStore.getState();
-  console.log('[playback] togglePlay isPlaying=', player.isPlaying);
   if (player.isPlaying) {
     s.controller.pause();
     player.setPlaying(false);
@@ -352,12 +351,7 @@ export async function togglePlay(): Promise<void> {
     s.cursor.seek(0);
   }
   syncIndex();
-  try {
-    await s.controller.start(s.cursor, currentInstrument(), settings.tempoMs);
-    console.log('[playback] togglePlay start ok');
-  } catch (e) {
-    console.log('[playback] togglePlay start threw', e);
-  }
+  await s.controller.start(s.cursor, currentInstrument(), settings.tempoMs);
   player.setPlaying(true);
 }
 
@@ -394,7 +388,12 @@ export function setInstrumentId(id: number): void {
 }
 
 /** Public for the settings screen's precomputed toggle. */
-export function switchToPrecomputed(): void {
+export async function switchToPrecomputed(): Promise<void> {
+  const wasPlaying = usePlayerStore.getState().isPlaying;
+  if (wasPlaying) {
+    requireServices().controller.pause();
+    usePlayerStore.getState().setPlaying(false);
+  }
   // Cancel any in-flight calculation first — otherwise it keeps hogging the
   // JS thread after we've switched back.
   cancelCalculation();
@@ -407,6 +406,14 @@ export function switchToPrecomputed(): void {
   );
   useSettingsStore.getState().setDigitCount(DEFAULT_SETTINGS.digitCount);
   usePlayerStore.getState().reset();
+  if (wasPlaying) {
+    // Keep playing through the source switch with the precomputed digits.
+    const settings = useSettingsStore.getState();
+    s.cursor.seek(0);
+    syncIndex();
+    await s.controller.start(s.cursor, currentInstrument(), settings.tempoMs);
+    usePlayerStore.getState().setPlaying(true);
+  }
 }
 
 /**
@@ -428,7 +435,6 @@ export function startBackgroundCalculation(
   const s = requireServices();
   calcCancelled = false;
   const wasPlaying = usePlayerStore.getState().isPlaying;
-  console.log('[playback] startBackgroundCalculation wasPlaying=', wasPlaying);
   if (wasPlaying) {
     s.controller.pause();
     usePlayerStore.getState().setPlaying(false);
@@ -468,18 +474,12 @@ export function startBackgroundCalculation(
     s.cursor.swapSource(starter, starter.length - 1);
     usePlayerStore.getState().reset();
     let resumed = false;
-    console.log('[playback] phase 1 done, wasPlaying=', wasPlaying, 'calcCancelled=', calcCancelled);
     if (wasPlaying) {
       // Keep playing through the source switch with the computed digits.
       const settings = useSettingsStore.getState();
       s.cursor.seek(0);
       syncIndex();
-      try {
-        await s.controller.start(s.cursor, currentInstrument(), settings.tempoMs);
-        console.log('[playback] controller.start ok');
-      } catch (e) {
-        console.log('[playback] controller.start threw', e);
-      }
+      await s.controller.start(s.cursor, currentInstrument(), settings.tempoMs);
       usePlayerStore.getState().setPlaying(true);
       resumed = true;
     }
