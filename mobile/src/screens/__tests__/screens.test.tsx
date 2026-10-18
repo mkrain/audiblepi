@@ -55,6 +55,7 @@ jest.mock('@react-navigation/native', () => ({
 
 jest.mock('../../playback', () => ({
   getVisibleNotes: jest.fn(),
+  getCurrentDigit: jest.fn(),
   getNoteStrip: jest.fn(),
   getUpcomingNotes: jest.fn(),
   getDigitTotal: jest.fn(),
@@ -80,6 +81,7 @@ import {
   cancelBackgroundCalculation,
   cancelCalculation,
   cycleInstrument,
+  getCurrentDigit,
   getDigitTotal,
   getNoteStrip,
   getUpcomingNotes,
@@ -98,6 +100,7 @@ import { usePlayerStore } from '../../state/player';
 import { useSettingsStore } from '../../state/settings';
 
 const mockGetVisibleNotes = getVisibleNotes as jest.Mock;
+const mockGetCurrentDigit = getCurrentDigit as jest.Mock;
 const mockGetNoteStrip = getNoteStrip as jest.Mock;
 const mockGetUpcomingNotes = getUpcomingNotes as jest.Mock;
 const mockGetDigitTotal = getDigitTotal as jest.Mock;
@@ -121,21 +124,22 @@ describe('PlayerScreen', () => {
       current: 'C#',
       next: 'D',
     });
+    mockGetCurrentDigit.mockReturnValue('1');
     mockGetNoteStrip.mockReturnValue([
-      { offset: -2, digitIndex: 39, note: null },
-      { offset: -1, digitIndex: 40, note: 'C' },
-      { offset: 0, digitIndex: 41, note: 'C#' },
-      { offset: 1, digitIndex: 42, note: 'D' },
-      { offset: 2, digitIndex: 43, note: 'D#' },
+      { offset: -2, digitIndex: 39, note: null, digit: null },
+      { offset: -1, digitIndex: 40, note: 'C', digit: '0' },
+      { offset: 0, digitIndex: 41, note: 'C#', digit: '1' },
+      { offset: 1, digitIndex: 42, note: 'D', digit: '2' },
+      { offset: 2, digitIndex: 43, note: 'D#', digit: '3' },
     ]);
     mockGetUpcomingNotes.mockReturnValue([
-      { offset: 1, digitIndex: 42, note: 'D' },
-      { offset: 2, digitIndex: 43, note: 'D#' },
-      { offset: 3, digitIndex: 44, note: 'E' },
-      { offset: 4, digitIndex: 45, note: 'F' },
-      { offset: 5, digitIndex: 46, note: 'F#' },
-      { offset: 6, digitIndex: 47, note: 'G' },
-      { offset: 7, digitIndex: 48, note: 'G#' },
+      { offset: 1, digitIndex: 42, note: 'D', digit: '2' },
+      { offset: 2, digitIndex: 43, note: 'D#', digit: '3' },
+      { offset: 3, digitIndex: 44, note: 'E', digit: '4' },
+      { offset: 4, digitIndex: 45, note: 'F', digit: '5' },
+      { offset: 5, digitIndex: 46, note: 'F#', digit: '6' },
+      { offset: 6, digitIndex: 47, note: 'G', digit: '7' },
+      { offset: 7, digitIndex: 48, note: 'G#', digit: '8' },
     ]);
     mockGetDigitTotal.mockReturnValue(1000);
     mockTogglePlay.mockResolvedValue(undefined);
@@ -148,7 +152,6 @@ describe('PlayerScreen', () => {
     usePlayerStore.setState({ digitIndex: 41 });
     const root = render(<PlayerScreen />).root;
     expect(root.findByProps({ testID: 'counter' }).props.children).toEqual([
-      'digit ',
       '42',
       ' of ',
       '1,000',
@@ -194,8 +197,8 @@ describe('PlayerScreen', () => {
   test('hero shows digit to note mapping', () => {
     usePlayerStore.setState({ digitIndex: 41 });
     const root = render(<PlayerScreen />).root;
-    expect(root.findByProps({ testID: 'current-note-name' }).props.children).toBe(
-      'C#',
+    expect(root.findByProps({ testID: 'current-digit' }).props.children).toBe(
+      '1',
     );
   });
 });

@@ -20,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   cancelBackgroundCalculation,
   cycleInstrument,
+  getCurrentDigit,
   getDigitTotal,
   getNoteStrip,
   getUpcomingNotes,
@@ -127,6 +128,7 @@ export function PlayerScreen() {
   const targetDigits = useCalculationStore((s) => s.targetDigits);
 
   const notes = getVisibleNotes();
+  const currentDigit = getCurrentDigit();
   const strip = getNoteStrip();
   const upcoming = getUpcomingNotes(UPCOMING_COUNT);
   const total = getDigitTotal();
@@ -165,7 +167,7 @@ export function PlayerScreen() {
       {/* Compact header: counter + base badge + instrument */}
       <View style={styles.header}>
         <Text testID="counter" style={styles.counter}>
-          digit {(digitIndex + 1).toLocaleString()} of {total.toLocaleString()}
+          {(digitIndex + 1).toLocaleString()} of {total.toLocaleString()}
         </Text>
         <View style={styles.headerRight}>
           <View testID="base-indicator" style={styles.baseBadge}>
@@ -186,15 +188,12 @@ export function PlayerScreen() {
         </View>
       </View>
 
-      {/* Hero: current note + digit→note mapping */}
+      {/* Hero: current digit value + note mapping */}
       <View style={styles.hero}>
-        <Text testID="current-note-name" style={styles.heroNote}>
-          {notes.current ?? '–'}
+        <Text testID="current-digit" style={styles.heroDigitBig}>
+          {currentDigit ?? '–'}
         </Text>
         <View style={styles.heroDigitWrap}>
-          <Text style={styles.heroDigit}>
-            digit {(digitIndex + 1).toLocaleString()}
-          </Text>
           <Ionicons
             name="arrow-forward"
             size={fontSizes.body}
@@ -236,12 +235,13 @@ export function PlayerScreen() {
             >
               <Text
                 style={[
-                  styles.rollCellText,
-                  i === 0 && styles.rollCellTextHit,
+                  styles.rollCellDigit,
+                  i === 0 && styles.rollCellDigitHit,
                 ]}
               >
-                {u.note ?? '·'}
+                {u.digit ?? '·'}
               </Text>
+              <Text style={styles.rollCellNote}>{u.note ?? '·'}</Text>
             </View>
           ))}
         </View>
@@ -355,14 +355,13 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingVertical: spacing.sm,
   },
-  heroNote: {
+  heroDigitBig: {
     color: colors.accent,
     fontSize: 56,
     fontWeight: '200',
-    // Fixed width + left alignment keeps the layout stable when switching
-    // between natural notes (e.g. "D") and accidentals (e.g. "D#") —
-    // centered text would still shift within the box.
-    minWidth: 160,
+    // Fixed width + left alignment keeps the layout stable across digit
+    // values — same anti-jitter treatment the note hero had.
+    minWidth: 96,
     textAlign: 'left',
   },
   heroDigit: {
@@ -463,25 +462,32 @@ const styles = StyleSheet.create({
   },
   rollCell: {
     flex: 1,
-    aspectRatio: 1,
     borderRadius: 8,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: spacing.xs,
+    // Taller than wide: periodic-table cell proportions for digit + note.
+    minHeight: 64,
   },
   rollCellHit: {
     backgroundColor: colors.accentDim,
     borderColor: colors.accent,
   },
-  rollCellText: {
+  rollCellDigit: {
     color: colors.text,
-    fontSize: fontSizes.body,
-    fontWeight: '600',
+    fontSize: fontSizes.title,
+    fontWeight: '700',
+    fontVariant: ['tabular-nums'],
   },
-  rollCellTextHit: {
-    color: colors.text,
+  rollCellDigitHit: {
+    color: colors.accent,
+  },
+  rollCellNote: {
+    color: colors.muted,
+    fontSize: fontSizes.tiny,
   },
   calcBanner: {
     flexDirection: 'row',

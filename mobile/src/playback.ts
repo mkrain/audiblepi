@@ -255,6 +255,15 @@ export function getVisibleNotes(): {
   };
 }
 
+/** Base-12 digit character at the cursor ('0'-'9', 'A', 'B'); null when unavailable. */
+export function getCurrentDigit(): string | null {
+  const s = services;
+  if (!s) {
+    return null;
+  }
+  return s.cursor.current || null;
+}
+
 export function getDigitTotal(): number {
   return services?.cursor.total ?? 0;
 }
@@ -277,6 +286,8 @@ export interface StripNote {
   /** 0-based absolute digit index. */
   digitIndex: number;
   note: NoteName | null;
+  /** Base-12 digit character ('0'-'9', 'A', 'B') at this position; null if out of range. */
+  digit: string | null;
 }
 
 /**
@@ -291,10 +302,12 @@ export function getNoteStrip(): StripNote[] {
   const result: StripNote[] = [];
   for (let offset = -2; offset <= 2; offset++) {
     const digitIndex = s.cursor.index + offset;
+    const digitChar = s.cursor.peekDigitAt(digitIndex) || null;
     result.push({
       offset,
       digitIndex,
-      note: noteForDigitChar(s.cursor.peekDigitAt(digitIndex)),
+      note: noteForDigitChar(digitChar ?? ''),
+      digit: digitChar,
     });
   }
   return result;
@@ -312,10 +325,12 @@ export function getUpcomingNotes(count: number): StripNote[] {
   const result: StripNote[] = [];
   for (let i = 1; i <= count; i++) {
     const digitIndex = s.cursor.index + i;
+    const digitChar = s.cursor.peekDigitAt(digitIndex) || null;
     result.push({
       offset: i,
       digitIndex,
-      note: noteForDigitChar(s.cursor.peekDigitAt(digitIndex)),
+      note: noteForDigitChar(digitChar ?? ''),
+      digit: digitChar,
     });
   }
   return result;
