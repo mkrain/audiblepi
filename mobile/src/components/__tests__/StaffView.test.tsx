@@ -52,9 +52,7 @@ describe('StaffView', () => {
 
   test('tapping the staff plays the nearest note', () => {
     const root = render(<StaffView />).root;
-    // Find the staff container (the responder view)
-    const staff = root.findByProps({ testID: undefined });
-    // Simulate a tap near the playhead (offset 0)
+    // In the test renderer onLayout never fires, so the playhead sits at x=0.
     act(() => {
       const responder = root.find(
         (node) =>
@@ -62,10 +60,10 @@ describe('StaffView', () => {
           node.props.onResponderRelease !== undefined,
       );
       responder.props.onResponderGrant({
-        nativeEvent: { locationX: 110 },
+        nativeEvent: { locationX: 0 },
       });
       responder.props.onResponderRelease({
-        nativeEvent: { locationX: 110 },
+        nativeEvent: { locationX: 0 },
       });
     });
     expect(mockTapNoteAt).toHaveBeenCalledWith(0);

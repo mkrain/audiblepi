@@ -10,8 +10,6 @@ const BEFORE = 3;
 const AFTER = 10;
 /** Horizontal pixels per digit. */
 const SPACING = 30;
-/** Playhead x from the staff's left edge. */
-const PLAYHEAD_X = 110;
 /** Tap vs swipe threshold in pixels. */
 const TAP_SLOP = 10;
 
@@ -87,11 +85,17 @@ export function StaffView() {
     scrubbing: false,
   });
 
+  // Playhead sits at the horizontal center, aligned with the transport play
+  // button and the current strip key above.
+  const [staffWidth, setStaffWidth] = useState(0);
+  const playheadX = staffWidth / 2;
+
   return (
     <View style={styles.wrap}>
       <Text style={styles.label}>SCORE</Text>
       <View
         style={styles.staff}
+        onLayout={(e) => setStaffWidth(e.nativeEvent.layout.width)}
         onStartShouldSetResponder={() => true}
         onResponderGrant={(e) => {
           const x = e.nativeEvent.locationX;
@@ -126,7 +130,7 @@ export function StaffView() {
           if (!g.scrubbing) {
             // Tap: find the nearest note to the touch and play it.
             const offset = Math.round(
-              (e.nativeEvent.locationX - PLAYHEAD_X) / SPACING,
+              (e.nativeEvent.locationX - playheadX) / SPACING,
             );
             const clamped = Math.max(-BEFORE, Math.min(AFTER, offset));
             const tapped = notes.find((n) => n.offset === clamped);
@@ -147,14 +151,14 @@ export function StaffView() {
           />
         ))}
         {/* Playhead */}
-        <View style={styles.playhead} />
+        <View style={[styles.playhead, { left: playheadX }]} />
 
         {/* Notes */}
         {notes.map((n) => {
           if (!n.note) {
             return null;
           }
-          const x = PLAYHEAD_X + n.offset * SPACING;
+          const x = playheadX + n.offset * SPACING;
           const y = NOTE_Y[n.note];
           const isCurrent = n.offset === 0;
           const isPressed = n.digitIndex === pressedDigitIndex;
@@ -245,7 +249,6 @@ const styles = StyleSheet.create({
   },
   playhead: {
     position: 'absolute',
-    left: PLAYHEAD_X,
     top: 6,
     bottom: 6,
     width: 2,
