@@ -191,6 +191,7 @@ export function StaffView() {
 const styles = StyleSheet.create({
   wrap: {
     marginTop: spacing.sm,
+    width: '100%',
   },
   label: {
     fontSize: fontSizes.tiny,
