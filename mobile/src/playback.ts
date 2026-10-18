@@ -341,6 +341,7 @@ export async function togglePlay(): Promise<void> {
   const s = requireServices();
   const player = usePlayerStore.getState();
   const settings = useSettingsStore.getState();
+  console.log('[playback] togglePlay isPlaying=', player.isPlaying);
   if (player.isPlaying) {
     s.controller.pause();
     player.setPlaying(false);
@@ -351,7 +352,12 @@ export async function togglePlay(): Promise<void> {
     s.cursor.seek(0);
   }
   syncIndex();
-  await s.controller.start(s.cursor, currentInstrument(), settings.tempoMs);
+  try {
+    await s.controller.start(s.cursor, currentInstrument(), settings.tempoMs);
+    console.log('[playback] togglePlay start ok');
+  } catch (e) {
+    console.log('[playback] togglePlay start threw', e);
+  }
   player.setPlaying(true);
 }
 
