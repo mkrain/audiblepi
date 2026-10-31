@@ -9,6 +9,7 @@
 import { useCallback, useState } from 'react';
 import {
   Image,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -190,6 +191,17 @@ export function PlayerScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Scrollable column: on Android the tab bar, adaptive banner and
+          system nav bar leave less height than the fixed player content
+          needs, and Android hard-clips overflow at the container edge —
+          which cut the transport row and staff off behind the tab bar.
+          The ScrollView keeps the identical layout when it fits and
+          scrolls only when it doesn't. */}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
       {/* Compact header: counter + base badge + instrument */}
       <View style={styles.header}>
         <Text testID="counter" style={styles.counter}>
@@ -329,6 +341,7 @@ export function PlayerScreen() {
           </TouchableOpacity>
         </View>
       )}
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -337,8 +350,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  scroll: {
+    flex: 1,
+  },
+  content: {
+    flexGrow: 1,
     alignItems: 'center',
     paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
   },
   header: {
     flexDirection: 'row',
